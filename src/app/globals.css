@@ -1,0 +1,114 @@
+/* Modern Startup Design System - Global Styles */
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  /* Refined warm background from theme */
+  background-color: #F8F9FA;
+  color: #1E293B;
+  /* Inter sans-serif for body text - startup standard */
+  font-family: var(--font-inter), 'Inter', 'SF Pro Text', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+  letter-spacing: -0.01em;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: #2C3E50;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+a:hover {
+  color: #1A252F;
+  text-decoration: none;
+  opacity: 0.9;
+}
+
+/* Ensure proper font loading */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-poppins), 'Poppins', 'SF Pro Display', sans-serif;
+  font-weight: 600;
+  color: #23262F;
+  letter-spacing: -0.01em;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+h1, h2 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Startup-style text highlight */
+strong, b {
+  font-weight: 600;
+}
+
+/* Startup-like input styles */
+input, textarea, select {
+  font-family: var(--font-inter), 'Inter', 'SF Pro Text', sans-serif;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+}
+
+/* Subtle animations for UI elements */
+button, a, .MuiCard-root {
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Modern selection styling */
+::selection {
+  background-color: rgba(44, 62, 80, 0.15);
+  color: #1A252F;
+}
+
+/* Scrollbar styling for modern browsers - startup minimalist style */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F9FAFB;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #E2E8F0;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Startup-style blockquotes */
+blockquote {
+  border-left: 3px solid #2C3E50;
+  padding-left: 1rem;
+  margin-left: 0;
+  font-style: normal;
+  color: #64748B;
+}
+
+/* Enhance code display for modern tech look */
+code {
+  font-family: 'SF Mono', 'Roboto Mono', 'Consolas', monospace;
+  background-color: rgba(226, 228, 235, 0.4);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
