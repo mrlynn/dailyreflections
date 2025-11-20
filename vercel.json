@@ -1,0 +1,17 @@
+{
+  "buildCommand": "npm run build",
+  "crons": [
+    {
+      "path": "/api/cron/send-daily-emails",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/feedback/analyze",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/feedback/cleanup",
+      "schedule": "0 7 * * 1"
+    }
+  ]
+}

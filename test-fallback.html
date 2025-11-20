@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Background Image Fallback Test</title>
+  <style>
+    .test-container {
+      width: 300px;
+      height: 200px;
+      margin: 20px;
+      border: 1px solid #333;
+    }
+    .test1 {
+      background-image:
+        url('/images/big-book/chapter1.png'),
+        url('/images/step12.png');
+      background-size: cover;
+      background-position: center;
+    }
+    .test2 {
+      background-image:
+        url('/images/big-book/chapter2.png'),
+        url('/images/step12.png');
+      background-size: cover;
+      background-position: center;
+    }
+    .test3 {
+      background-image:
+        url('/images/big-book/chapter5.png'),
+        url('/images/steps.png');
+      background-size: cover;
+      background-position: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>Background Image Fallback Test</h1>
+  <p>This page tests CSS background image fallbacks to ensure they work correctly.</p>
+
+  <div class="test-container test1">
+    <h2>Chapter 1</h2>
+    <p>Should use chapter1.png (exists)</p>
+  </div>
+
+  <div class="test-container test2">
+    <h2>Chapter 2</h2>
+    <p>Should fall back to step12.png (chapter2.png doesn't exist)</p>
+  </div>
+
+  <div class="test-container test3">
+    <h2>Chapter 5</h2>
+    <p>Should fall back to steps.png (chapter5.png doesn't exist)</p>
+  </div>
+
+  <script>
+    // Check if images loaded
+    window.onload = function() {
+      console.log("Page loaded, checking background images...");
+      // Unfortunately we can't directly check if background images loaded in JS
+      // This is just to remind us to check visually
+    };
+  </script>
+</body>
+</html>

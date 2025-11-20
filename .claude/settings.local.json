@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mongosh \"mongodb+srv://mike:Password678%21@performance.zbcul.mongodb.net/dailyreflections\" --eval \"db.users.findOne({email: ''mike@aacompanion.com''})\")",
+      "Bash(lsof:*)",
+      "Bash(npm run generate-image:test:*)",
+      "Bash(npm run generate-image:test-run:*)",
+      "Bash(curl:*)",
+      "Bash(pkill:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm run generate-test-image:*)",
+      "WebFetch(domain:localhost)",
+      "Bash(node:*)",
+      "Bash(mongosh \"mongodb+srv://mike:Password678%21@performance.zbcul.mongodb.net/dailyreflections\" --eval \"db.reflections.findOne({})\")",
+      "Bash(mongosh \"mongodb+srv://mike:Password678%21@performance.zbcul.mongodb.net/dailyreflections\" --eval \"db.bigbook_page_vectors.findOne({})\")",
+      "Bash(npm install:*)",
+      "WebFetch(domain:authjs.dev)",
+      "WebFetch(domain:next-auth.js.org)",
+      "Bash(npm ls:*)",
+      "Bash(awk:*)",
+      "Bash(xargs kill:*)",
+      "Bash(cat:*)",
+      "Bash(killall:*)",
+      "Bash(PORT=3004 npm run dev:*)",
+      "Bash(mongosh \"mongodb+srv://mike:Password678%21@performance.zbcul.mongodb.net/dailyreflections\" --eval \"db.volunteer_applications.findOne({_id: ObjectId(''6913da9d80a8503becc1602e'')});\")",
+      "Bash(PORT=3001 npm run dev:*)",
+      "Bash(kill:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(NODE_ENV=development node:*)",
+      "Bash(mongosh \"mongodb+srv://mike:Password678%21@performance.zbcul.mongodb.net/dailyreflections\" --eval \"db.reflections.findOne({});\")",
+      "Bash(chmod:*)",
+      "WebFetch(domain:ably.com)",
+      "WebFetch(domain:vercel.com)",
+      "WebFetch(domain:dev.to)",
+      "WebFetch(domain:github.com)",
+      "Bash(PORT=3002 npm run dev:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

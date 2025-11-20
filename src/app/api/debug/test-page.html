@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bookmark API Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 { color: #1976d2; }
+    h2 { color: #2196f3; margin-top: 30px; }
+    pre {
+      background-color: #f5f5f5;
+      border-radius: 4px;
+      padding: 12px;
+      overflow: auto;
+      max-height: 300px;
+    }
+    button {
+      background-color: #2196f3;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    button:hover {
+      background-color: #1976d2;
+    }
+    input {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-right: 10px;
+      width: 60px;
+    }
+    .success { color: #4caf50; }
+    .error { color: #f44336; }
+    .loading { opacity: 0.5; }
+    .panel {
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Bookmark API Debug Page</h1>
+
+  <div class="panel">
+    <h2>Authentication Status</h2>
+    <button id="checkAuth">Check Auth Status</button>
+    <pre id="authResult">No data</pre>
+  </div>
+
+  <div class="panel">
+    <h2>MongoDB Connection</h2>
+    <button id="checkMongo">Test MongoDB Connection</button>
+    <pre id="mongoResult">No data</pre>
+  </div>
+
+  <div class="panel">
+    <h2>Test Bookmark API</h2>
+    <div>
+      <label>Page Number:</label>
+      <input type="number" id="pageNumber" value="42" min="1" max="999">
+      <button id="testCreate">Create Bookmark</button>
+    </div>
+    <pre id="bookmarkResult">No data</pre>
+  </div>
+
+  <div class="panel">
+    <h2>Direct API Access</h2>
+    <div>
+      <label>Page Number:</label>
+      <input type="number" id="directPageNumber" value="42" min="1" max="999">
+      <button id="directCreate">Create Direct</button>
+      <button id="directDelete">Delete Direct</button>
+    </div>
+    <pre id="directResult">No data</pre>
+  </div>
+
+  <script>
+    // Helper functions
+    function showResult(elementId, data, isError = false) {
+      const element = document.getElementById(elementId);
+      element.textContent = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
+      element.className = isError ? 'error' : 'success';
+    }
+
+    function setLoading(elementId) {
+      const element = document.getElementById(elementId);
+      element.textContent = "Loading...";
+      element.className = 'loading';
+    }
+
+    // Check auth status
+    document.getElementById('checkAuth').addEventListener('click', async () => {
+      try {
+        setLoading('authResult');
+        const response = await fetch('/api/debug-auth');
+        const data = await response.json();
+        showResult('authResult', data);
+      } catch (error) {
+        showResult('authResult', error.message, true);
+      }
+    });
+
+    // Check MongoDB connection
+    document.getElementById('checkMongo').addEventListener('click', async () => {
+      try {
+        setLoading('mongoResult');
+        const response = await fetch('/api/test-mongo');
+        const data = await response.json();
+        showResult('mongoResult', data);
+      } catch (error) {
+        showResult('mongoResult', error.message, true);
+      }
+    });
+
+    // Test bookmark API
+    document.getElementById('testCreate').addEventListener('click', async () => {
+      try {
+        setLoading('bookmarkResult');
+        const pageNumber = parseInt(document.getElementById('pageNumber').value);
+
+        const response = await fetch('/api/test-bookmark', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pageNumber }),
+          credentials: 'include'
+        });
+
+        const data = await response.json();
+        showResult('bookmarkResult', data);
+      } catch (error) {
+        showResult('bookmarkResult', error.message, true);
+      }
+    });
+
+    // Direct API access
+    document.getElementById('directCreate').addEventListener('click', async () => {
+      try {
+        setLoading('directResult');
+        const pageNumber = parseInt(document.getElementById('directPageNumber').value);
+
+        const response = await fetch('/api/bigbook/bookmarks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pageNumber }),
+          credentials: 'include'
+        });
+
+        const data = await response.json();
+        const status = response.status;
+        showResult('directResult', { status, data });
+      } catch (error) {
+        showResult('directResult', error.message, true);
+      }
+    });
+
+    document.getElementById('directDelete').addEventListener('click', async () => {
+      try {
+        setLoading('directResult');
+        const pageNumber = parseInt(document.getElementById('directPageNumber').value);
+
+        const response = await fetch(`/api/bigbook/bookmarks?pageNumber=${pageNumber}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+
+        const data = await response.json();
+        const status = response.status;
+        showResult('directResult', { status, data });
+      } catch (error) {
+        showResult('directResult', error.message, true);
+      }
+    });
+
+    // Auto-load auth status on page load
+    document.getElementById('checkAuth').click();
+  </script>
+</body>
+</html>
