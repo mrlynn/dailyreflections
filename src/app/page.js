@@ -44,6 +44,7 @@ import DailyProgressPanel from '@/components/Home/DailyProgressPanel';
 import SkeletonLoading from '@/components/Home/SkeletonLoading';
 import { stepsOfTheMonth } from '@/lib/stepsOfTheMonth';
 import SessionDebug from '@/components/Debug/SessionDebug';
+import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 
 // Helper function to get time-based greeting
 const getTimeBasedGreeting = () => {
@@ -103,6 +104,9 @@ export default function Home() {
 
   // Use the custom hook to manage daily thought modal
   const { showModal, closeModal } = useDailyThought({ autoShow: true });
+
+  // Check if realtime chat feature is enabled
+  const isRealtimeChatEnabled = useFeatureFlag('REALTIME_CHAT');
 
   // Fetch user activity data
   useEffect(() => {
@@ -460,32 +464,34 @@ export default function Home() {
                 </Button>
               </Grid>
 
-              {/* Talk to Volunteer Button */}
-              <Grid item xs={12} sm={12} md={4}>
-                <Button
-                  variant="contained"
-                  size="large"
-                  fullWidth
-                  onClick={() => router.push('/chat')}
-                  sx={{
-                    py: 2,
-                    fontWeight: 600,
-                    fontSize: { xs: '1rem', md: '1.1rem' },
-                    backgroundColor: '#5DA6A7',
-                    color: '#FFFFFF',
-                    boxShadow: '0 8px 30px rgba(93,166,167,0.3)',
-                    '&:hover': {
-                      backgroundColor: '#4A8F90',
-                      transform: 'translateY(-2px)',
-                      boxShadow: '0 12px 35px rgba(93,166,167,0.4)',
-                    },
-                    transition: 'all 0.3s ease',
-                  }}
-                  startIcon={<ChatIcon sx={{ fontSize: '1.5rem' }} />}
-                >
-                  Talk to a Volunteer
-                </Button>
-              </Grid>
+              {/* Talk to Volunteer Button - Only show if realtime chat is enabled */}
+              {isRealtimeChatEnabled && (
+                <Grid item xs={12} sm={12} md={4}>
+                  <Button
+                    variant="contained"
+                    size="large"
+                    fullWidth
+                    onClick={() => router.push('/chat')}
+                    sx={{
+                      py: 2,
+                      fontWeight: 600,
+                      fontSize: { xs: '1rem', md: '1.1rem' },
+                      backgroundColor: '#5DA6A7',
+                      color: '#FFFFFF',
+                      boxShadow: '0 8px 30px rgba(93,166,167,0.3)',
+                      '&:hover': {
+                        backgroundColor: '#4A8F90',
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 12px 35px rgba(93,166,167,0.4)',
+                      },
+                      transition: 'all 0.3s ease',
+                    }}
+                    startIcon={<ChatIcon sx={{ fontSize: '1.5rem' }} />}
+                  >
+                    Talk to a Volunteer
+                  </Button>
+                </Grid>
+              )}
             </Grid>
 
           </Box>
