@@ -24,6 +24,7 @@ import BookmarkIcon from '@mui/icons-material/Bookmark';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import Link from 'next/link';
+import Image from 'next/image';
 
 function formatDate(dateString) {
   if (!dateString) return '';
@@ -186,11 +187,44 @@ export default function ArticlePageClient({ article, relatedArticles = [], previ
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Avatar
-              alt={article.author?.name}
-              src={article.author?.avatar || ''}
-              sx={{ mr: 2, width: 56, height: 56 }}
-            />
+            {article.author?.avatar ? (
+              <Box
+                sx={{
+                  mr: 2,
+                  width: 56,
+                  height: 56,
+                  borderRadius: '50%',
+                  overflow: 'hidden',
+                  flexShrink: 0,
+                  position: 'relative',
+                  backgroundColor: 'grey.200',
+                  '& img': {
+                    imageRendering: 'auto',
+                  },
+                }}
+              >
+                <Image
+                  src={article.author.avatar}
+                  alt={article.author?.name || 'Author'}
+                  fill
+                  style={{
+                    objectFit: 'cover',
+                    objectPosition: 'center',
+                  }}
+                  sizes="56px"
+                  quality={100}
+                  priority={false}
+                  unoptimized={false}
+                />
+              </Box>
+            ) : (
+              <Avatar
+                alt={article.author?.name}
+                sx={{ mr: 2, width: 56, height: 56 }}
+              >
+                {(article.author?.name || 'DR')[0].toUpperCase()}
+              </Avatar>
+            )}
             <Box>
               <Typography variant="subtitle1" fontWeight={500}>
                 {article.author?.name || 'Daily Reflections'}
@@ -330,11 +364,45 @@ export default function ArticlePageClient({ article, relatedArticles = [], previ
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <Avatar
-                alt={article.author?.name}
-                src={article.author?.avatar || ''}
-                sx={{ width: 64, height: 64, mr: 2 }}
-              />
+              {article.author?.avatar ? (
+                <Box
+                  sx={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    flexShrink: 0,
+                    position: 'relative',
+                    mr: 2,
+                    backgroundColor: 'grey.200',
+                    '& img': {
+                      imageRendering: 'auto',
+                      imageRendering: '-webkit-optimize-contrast',
+                    },
+                  }}
+                >
+                  <Image
+                    src={article.author.avatar}
+                    alt={article.author?.name || 'Author'}
+                    fill
+                    style={{
+                      objectFit: 'cover',
+                      objectPosition: 'center',
+                    }}
+                    sizes="64px"
+                    quality={100}
+                    priority={false}
+                    unoptimized={false}
+                  />
+                </Box>
+              ) : (
+                <Avatar
+                  alt={article.author?.name}
+                  sx={{ width: 64, height: 64, mr: 2 }}
+                >
+                  {(article.author?.name || 'DR')[0].toUpperCase()}
+                </Avatar>
+              )}
               <Box>
                 <Typography variant="h6" fontWeight={600}>
                   {article.author?.name || 'Daily Reflections'}

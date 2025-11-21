@@ -129,24 +129,28 @@ const authOptions = {
           const userDoc = await db.collection('users').findOne({ email: user.email });
           if (userDoc) {
             token.isAdmin = userDoc.isAdmin === true;
+            token.role = userDoc.role || null;
             token.roles = userDoc.roles || [];
           } else {
             token.isAdmin = false;
+            token.role = null;
             token.roles = [];
           }
         } catch (error) {
           console.error('Error checking user roles/admin status:', error);
           token.isAdmin = false;
+          token.role = null;
           token.roles = [];
         }
       }
       return token;
     },
     async session({ session, token }) {
-      // Add user ID, displayName, isAdmin, and roles to session
+      // Add user ID, displayName, role, isAdmin, and roles to session
       if (session.user && token.id) {
         session.user.id = token.id;
         session.user.displayName = token.displayName;
+        session.user.role = token.role || null;
         session.user.isAdmin = token.isAdmin || false;
         session.user.roles = token.roles || [];
       }

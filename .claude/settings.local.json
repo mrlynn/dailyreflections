@@ -33,7 +33,10 @@
       "WebFetch(domain:vercel.com)",
       "WebFetch(domain:dev.to)",
       "WebFetch(domain:github.com)",
-      "Bash(PORT=3002 npm run dev:*)"
+      "Bash(PORT=3002 npm run dev:*)",
+      "Bash(mkdir:*)",
+      "Bash(npm run seed-course:*)",
+      "Bash(mongosh:*)"
     ],
     "deny": [],
     "ask": []
