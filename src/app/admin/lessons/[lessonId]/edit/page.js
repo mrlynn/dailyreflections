@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import AdminLayout from '@/components/admin/AdminLayout';
+import AdminLayout from '@/components/Admin/AdminLayout';
 import {
   Typography,
   Box,

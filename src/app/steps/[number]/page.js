@@ -771,18 +771,52 @@ export default function StepDetailPage() {
                       </Typography>
 
                       <List>
-                        {step.resources.map((resource, index) => (
-                          <ListItem key={index} sx={{ mb: 2, p: 2, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 1 }}>
-                            <ListItemIcon>
-                              <LibraryBooksIcon sx={{ color: getStepColor(step.number) }} />
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={resource.title}
-                              secondary={resource.chapter}
-                              primaryTypographyProps={{ fontWeight: 600 }}
-                            />
-                          </ListItem>
-                        ))}
+                        {step.resources.map((resource, index) => {
+                          // Generate link based on resource type
+                          let href = '#';
+                          if (resource.title === 'AA Big Book') {
+                            // Extract chapter number from "Chapter X: Title"
+                            const chapterMatch = resource.chapter.match(/Chapter (\d+)/);
+                            if (chapterMatch) {
+                              const chapterNum = chapterMatch[1];
+                              href = `/resources/big-book/chapter-${chapterNum}`;
+                            }
+                          } else if (resource.title === '12 Steps and 12 Traditions') {
+                            // Link to 12&12 step page
+                            href = `/resources/12-and-12/step-${step.number}`;
+                          }
+
+                          return (
+                            <ListItem
+                              key={index}
+                              component={Link}
+                              href={href}
+                              sx={{
+                                mb: 2,
+                                p: 2,
+                                bgcolor: 'background.paper',
+                                borderRadius: 2,
+                                boxShadow: 1,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                '&:hover': {
+                                  boxShadow: 3,
+                                  transform: 'translateY(-2px)',
+                                  bgcolor: 'action.hover'
+                                }
+                              }}
+                            >
+                              <ListItemIcon>
+                                <LibraryBooksIcon sx={{ color: getStepColor(step.number) }} />
+                              </ListItemIcon>
+                              <ListItemText
+                                primary={resource.title}
+                                secondary={resource.chapter}
+                                primaryTypographyProps={{ fontWeight: 600 }}
+                              />
+                            </ListItem>
+                          );
+                        })}
                       </List>
                     </>
                   )}
