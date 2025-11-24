@@ -390,20 +390,20 @@ export default function MeetingTrackerPage() {
                           <Grid item xs={4}>
                             <Paper elevation={0} sx={{ p: 2, textAlign: 'center', bgcolor: 'rgba(0,0,0,0.02)', borderRadius: 2 }}>
                               <Typography variant="h5" color="secondary" sx={{ fontWeight: 'bold' }}>
-                                {stats?.streaks?.current || 0}
+                                {stats?.ninetyInNinety?.progress || 0}
                               </Typography>
                               <Typography variant="caption" color="text.secondary">
-                                Current Streak
+                                Meetings Logged
                               </Typography>
                             </Paper>
                           </Grid>
                           <Grid item xs={4}>
                             <Paper elevation={0} sx={{ p: 2, textAlign: 'center', bgcolor: 'rgba(0,0,0,0.02)', borderRadius: 2 }}>
                               <Typography variant="h5" color="secondary" sx={{ fontWeight: 'bold' }}>
-                                {stats?.totalMeetings || 0}
+                                {stats?.streaks?.current || 0}
                               </Typography>
                               <Typography variant="caption" color="text.secondary">
-                                Total Meetings
+                                Current Streak
                               </Typography>
                             </Paper>
                           </Grid>

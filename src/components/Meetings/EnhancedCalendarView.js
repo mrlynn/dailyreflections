@@ -199,9 +199,18 @@ export default function EnhancedCalendarView({ stats }) {
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     return (
-      <Grid container sx={{ mb: 1, mt: 2, width: '100%' }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(7, 1fr)',
+          gap: 1,
+          mb: 1,
+          mt: 2,
+          width: '100%'
+        }}
+      >
         {dayNames.map((day, index) => (
-          <Grid item xs={1.71} key={index} sx={{ textAlign: 'center' }}>
+          <Box key={index} sx={{ textAlign: 'center' }}>
             <Typography
               variant="caption"
               sx={{
@@ -212,9 +221,9 @@ export default function EnhancedCalendarView({ stats }) {
             >
               {day}
             </Typography>
-          </Grid>
+          </Box>
         ))}
-      </Grid>
+      </Box>
     );
   };
 
@@ -256,7 +265,15 @@ export default function EnhancedCalendarView({ stats }) {
       {/* Calendar Grid */}
       <Box sx={{ mb: 3, width: '100%' }}>
         {monthView.map((week, weekIndex) => (
-          <Grid container key={weekIndex} sx={{ mb: 1 }}>
+          <Box
+            key={weekIndex}
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(7, 1fr)',
+              gap: 1,
+              mb: 1
+            }}
+          >
             {week.map((day, dayIndex) => {
               const dayInPeriod = isDayInPeriod(day);
               const dayNumber = getDayNumber(day);
@@ -265,7 +282,7 @@ export default function EnhancedCalendarView({ stats }) {
               const dayLabel = format(day, 'd');
 
               return (
-                <Grid item xs={1.71} key={dayIndex}>
+                <Box key={dayIndex} sx={{ display: 'flex', justifyContent: 'center' }}>
                   <Tooltip
                     title={dayInPeriod
                       ? `Day ${dayNumber}: ${format(day, 'MMM d, yyyy')}${isAttended(day) ? ' - Meeting Attended' : ''}`
@@ -277,7 +294,6 @@ export default function EnhancedCalendarView({ stats }) {
                         position: 'relative',
                         width: '40px',
                         height: '40px',
-                        margin: '0 auto',
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
@@ -347,63 +363,16 @@ export default function EnhancedCalendarView({ stats }) {
                       )}
                     </Box>
                   </Tooltip>
-                </Grid>
+                </Box>
               );
             })}
-          </Grid>
+          </Box>
         ))}
       </Box>
 
       </Box> {/* Close the Box container for the calendar section */}
 
-      {/* Simplified legend */}
-      <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Box sx={{
-            width: 12,
-            height: 12,
-            borderRadius: '50%',
-            bgcolor: theme.palette.success.main,
-            mr: 0.5
-          }} />
-          <Typography variant="caption">Attended</Typography>
-        </Box>
-
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Box sx={{
-            width: 12,
-            height: 12,
-            borderRadius: '50%',
-            bgcolor: theme.palette.primary.main,
-            mr: 0.5
-          }} />
-          <Typography variant="caption">Today</Typography>
-        </Box>
-
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Box sx={{
-            width: 12,
-            height: 12,
-            borderRadius: '50%',
-            bgcolor: theme.palette.error.light,
-            border: `1px solid ${theme.palette.error.main}`,
-            mr: 0.5
-          }} />
-          <Typography variant="caption">Missed</Typography>
-        </Box>
-
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Box sx={{
-            width: 12,
-            height: 12,
-            borderRadius: '50%',
-            bgcolor: theme.palette.action.hover,
-            mr: 0.5
-          }} />
-          <Typography variant="caption">Upcoming</Typography>
-        </Box>
-      </Box>
-
+      {/* Legend */}
       <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2, justifyContent: 'center' }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Box sx={{
