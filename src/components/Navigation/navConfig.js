@@ -19,31 +19,43 @@ import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 import QuizIcon from '@mui/icons-material/Quiz';
 import ThumbsUpDownIcon from '@mui/icons-material/ThumbsUpDown';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
+import LayersIcon from '@mui/icons-material/Layers';
 import { getTodayKey } from '@/utils/dateUtils';
 
 export const primaryNav = [
   { label: 'Home', href: '/', icon: HomeIcon },
-  { label: 'Circles', href: '/circles', icon: GroupsIcon, featureFlag: 'CIRCLES' },
   { label: 'Daily Reflection', href: `/today`, icon: CalendarMonthIcon, featureFlag: 'TODAY' },
-  { label: 'Big Book Reader', href: '/big-book', icon: MenuBookIcon, featureFlag: 'BIGBOOK' },
   { label: 'Search', href: '/search', icon: SearchIcon, featureFlag: 'SEARCH' },
+  {
+    label: 'Readings',
+    icon: MenuBookIcon,
+    children: [
+      { label: 'Big Book Reader', href: '/big-book', icon: MenuBookIcon, featureFlag: 'BIGBOOK' },
+      { label: '12 Steps Explorer', href: '/steps', icon: LayersIcon },
+    ]
+  },
+  { label: 'Circles', href: '/circles', icon: GroupsIcon, featureFlag: 'CIRCLES' },
 ];
 
 export const toolsNav = [
-  { label: '4th Step Inventory', href: '/step4', icon: PsychologyIcon, featureFlag: 'STEP4' },
-  { label: '90 in 90 Tracker', href: '/meetings/tracker', icon: AssignmentTurnedInIcon },
-  { label: '8th Step Amends List', href: '/step8', icon: FormatListBulletedIcon },
-  { label: '9th Step Making Amends', href: '/step9', icon: FormatListBulletedIcon },
-  { label: '10th Step Journal', href: '/journal', icon: EditNoteIcon, featureFlag: 'JOURNAL' },
+  {
+    label: 'Step Work',
+    icon: LayersIcon,
+    children: [
+      { label: '4th Step Inventory', href: '/step4', icon: PsychologyIcon, featureFlag: 'STEP4' },
+      { label: '8th Step Amends List', href: '/step8', icon: FormatListBulletedIcon },
+      { label: '9th Step Making Amends', href: '/step9', icon: FormatListBulletedIcon },
+      { label: '10th Step Journal', href: '/journal', icon: EditNoteIcon, featureFlag: 'JOURNAL' },
+    ]
+  },
   { label: 'Sobriety Tracker', href: '/sobriety', icon: CelebrationIcon, featureFlag: 'SOBRIETY' },
+  { label: '90 in 90 Tracker', href: '/meetings/tracker', icon: AssignmentTurnedInIcon },
 ];
 
 export const resourcesNav = [
   { label: 'Resources', href: '/resources', icon: LibraryBooksIcon },
-  { label: 'Meetings', href: '/resources/meetings', icon: MenuBookIcon },
+  { label: 'Meetings', href: '/resources/meetings', icon: EventIcon },
   { label: 'Literature', href: '/resources/literature', icon: ArticleIcon },
-  { label: 'Big Book Reader', href: '/big-book', icon: MenuBookIcon, featureFlag: 'BIGBOOK' },
-  { label: '12 Steps Explorer', href: '/steps', icon: MenuBookIcon },
   { label: 'Meeting Topics', href: '/topics', icon: LightbulbIcon, featureFlag: 'TOPICS' },
   { label: 'AA Trivia', href: '/trivia', icon: QuizIcon },
   { label: 'Blog', href: '/blog', icon: ArticleIcon, featureFlag: 'BLOG' },
@@ -56,15 +68,27 @@ export const assistantNav = [
 
 export const adminNav = [
   { label: 'Admin Dashboard', href: '/admin', icon: DashboardIcon, featureFlag: 'ADMIN' },
-  { label: 'Circles', href: '/admin/circles', icon: GroupsIcon, featureFlag: 'ADMIN' },
-  { label: 'Users', href: '/admin/users', icon: DashboardIcon, featureFlag: 'ADMIN', subFeature: 'USER_MANAGEMENT' },
-  { label: 'Moderation', href: '/admin/moderation', icon: DashboardIcon, featureFlag: 'ADMIN', subFeature: 'CONTENT_MODERATION' },
-  { label: 'Assistant Feedback', href: '/admin/feedback', icon: ThumbsUpDownIcon, featureFlag: 'ADMIN', subFeature: 'CHAT_FEEDBACK' },
-  { label: 'Analytics', href: '/admin/analytics', icon: DashboardIcon, featureFlag: 'ADMIN', subFeature: 'ANALYTICS' },
-  { label: 'RAG Sources', href: '/admin/rag-sources', icon: DashboardIcon, featureFlag: 'ADMIN', subFeature: 'RAG_SOURCES' },
-  { label: 'Meetings', href: '/admin/meetings', icon: EventIcon, featureFlag: 'ADMIN', subFeature: 'MEETINGS_MANAGEMENT' },
-  { label: 'Resources', href: '/admin/resources', icon: BookmarksIcon, featureFlag: 'ADMIN', subFeature: 'RESOURCES' },
-  { label: 'Blog', href: '/admin/blog', icon: ArticleIcon, featureFlag: 'ADMIN', subFeature: 'BLOG' },
+  {
+    label: 'Management',
+    icon: DashboardIcon,
+    children: [
+      { label: 'Circles', href: '/admin/circles', icon: GroupsIcon, featureFlag: 'ADMIN' },
+      { label: 'Users', href: '/admin/users', icon: DashboardIcon, featureFlag: 'ADMIN', subFeature: 'USER_MANAGEMENT' },
+      { label: 'Moderation', href: '/admin/moderation', icon: DashboardIcon, featureFlag: 'ADMIN', subFeature: 'CONTENT_MODERATION' },
+      { label: 'Meetings', href: '/admin/meetings', icon: EventIcon, featureFlag: 'ADMIN', subFeature: 'MEETINGS_MANAGEMENT' },
+      { label: 'Resources', href: '/admin/resources', icon: BookmarksIcon, featureFlag: 'ADMIN', subFeature: 'RESOURCES' },
+      { label: 'Blog', href: '/admin/blog', icon: ArticleIcon, featureFlag: 'ADMIN', subFeature: 'BLOG' },
+    ]
+  },
+  {
+    label: 'Data & Analytics',
+    icon: DashboardIcon,
+    children: [
+      { label: 'Assistant Feedback', href: '/admin/feedback', icon: ThumbsUpDownIcon, featureFlag: 'ADMIN', subFeature: 'CHAT_FEEDBACK' },
+      { label: 'Analytics', href: '/admin/analytics', icon: DashboardIcon, featureFlag: 'ADMIN', subFeature: 'ANALYTICS' },
+      { label: 'RAG Sources', href: '/admin/rag-sources', icon: DashboardIcon, featureFlag: 'ADMIN', subFeature: 'RAG_SOURCES' },
+    ]
+  },
 ];
 
 export default {
@@ -74,5 +98,3 @@ export default {
   assistantNav,
   adminNav,
 };
-
-

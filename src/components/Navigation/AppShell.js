@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -62,9 +62,48 @@ export default function AppShell({ children }) {
   const router = useRouter();
   const isAdmin = session?.user?.isAdmin === true;
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
+  const [isHovering, setIsHovering] = useState(false);
   const isDesktop = useMediaQuery('(min-width:900px)');
   const isMobile = useMediaQuery('(max-width:767px)');
   const { isGuest } = useGuestSession();
+
+  // Auto-collapse sidebar on specific pages by default (user can still open it)
+  const autoCollapseSidebarPages = [
+    /^\/\d{2}-\d{2}$/, // Date-based reflection pages (e.g., /01-15)
+    '/today',
+    '/assistant',
+  ];
+
+  const shouldAutoCollapse = isDesktop && autoCollapseSidebarPages.some(page => {
+    if (typeof page === 'string') {
+      return pathname === page;
+    }
+    return page.test(pathname);
+  });
+
+  // Auto-collapse sidebar when navigating to specific pages
+  useEffect(() => {
+    if (shouldAutoCollapse) {
+      setDesktopSidebarOpen(false);
+    }
+  }, [shouldAutoCollapse]);
+
+  const handleDesktopSidebarToggle = () => {
+    setDesktopSidebarOpen(prev => !prev);
+  };
+
+  const handleMouseEnter = () => {
+    if (!desktopSidebarOpen) {
+      setIsHovering(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovering(false);
+  };
+
+  const isSidebarVisible = desktopSidebarOpen || isHovering;
 
   const requiresIdentity = (path) => {
     const protectedPrefixes = [
@@ -370,27 +409,80 @@ export default function AppShell({ children }) {
         setCookieOnClose={false} // Don't set cookie when closing to allow repeated viewing
       />
 
-      {/* Permanent drawer on desktop */}
+      {/* Collapsible drawer on desktop with hover support */}
       {isDesktop && (
-        <Drawer
-          variant="permanent"
-          open
-          sx={{
-            width: drawerWidth,
-            flexShrink: 0,
-            position: 'fixed',
-            '& .MuiDrawer-paper': {
-              width: drawerWidth,
-              boxSizing: 'border-box',
-              borderRight: '1px solid rgba(0, 0, 0, 0.08)',
-              boxShadow: 'none',
+        <>
+          {/* Drawer */}
+          <Box
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            sx={{
+              position: 'fixed',
               top: { xs: 56, sm: 64 },
+              left: 0,
               height: { xs: 'calc(100% - 56px)', sm: 'calc(100% - 64px)' },
-            },
-          }}
-        >
-          {drawerContent}
-        </Drawer>
+              zIndex: (theme) => theme.zIndex.drawer,
+            }}
+          >
+            <Drawer
+              variant="permanent"
+              open
+              sx={{
+                width: isSidebarVisible ? drawerWidth : 0,
+                flexShrink: 0,
+                '& .MuiDrawer-paper': {
+                  width: drawerWidth,
+                  boxSizing: 'border-box',
+                  borderRight: isSidebarVisible ? '1px solid rgba(0, 0, 0, 0.08)' : 'none',
+                  boxShadow: isSidebarVisible ? '2px 0 8px rgba(0,0,0,0.1)' : 'none',
+                  top: { xs: 56, sm: 64 },
+                  height: { xs: 'calc(100% - 56px)', sm: 'calc(100% - 64px)' },
+                  transform: isSidebarVisible ? 'translateX(0)' : 'translateX(-100%)',
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                  overflowX: 'hidden',
+                },
+              }}
+            >
+              {drawerContent}
+            </Drawer>
+
+            {/* Sidebar Toggle Tab */}
+            <Box
+              sx={{
+                position: 'absolute',
+                right: isSidebarVisible ? -40 : -40,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                transition: 'right 0.3s ease',
+                zIndex: (theme) => theme.zIndex.drawer + 1,
+              }}
+            >
+              <IconButton
+                onClick={handleDesktopSidebarToggle}
+                sx={{
+                  backgroundColor: 'primary.main',
+                  color: 'white',
+                  width: 40,
+                  height: 80,
+                  borderRadius: '0 8px 8px 0',
+                  boxShadow: '2px 2px 8px rgba(0,0,0,0.2)',
+                  '&:hover': {
+                    backgroundColor: 'primary.dark',
+                  },
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {isSidebarVisible ? (
+                  <Box sx={{ fontSize: '1.2rem', fontWeight: 'bold' }}>‹</Box>
+                ) : (
+                  <Box sx={{ fontSize: '1.2rem', fontWeight: 'bold' }}>›</Box>
+                )}
+              </IconButton>
+            </Box>
+          </Box>
+        </>
       )}
 
       {/* Temporary drawer on mobile */}
@@ -416,13 +508,14 @@ export default function AppShell({ children }) {
         component="main"
         sx={{
           flexGrow: 1,
-          marginLeft: { xs: 0, md: `${drawerWidth}px` },
-          width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` },
+          marginLeft: { xs: 0, md: isSidebarVisible ? `${drawerWidth}px` : '0' },
+          width: { xs: '100%', md: isSidebarVisible ? `calc(100% - ${drawerWidth}px)` : '100%' },
           overflow: 'visible',
           backgroundColor: '#F8F9FA',
           pt: { xs: '56px', sm: '64px' },
           pb: 0,
           px: 0,
+          transition: 'margin-left 0.3s ease, width 0.3s ease',
         }}
       >
         <Box sx={{

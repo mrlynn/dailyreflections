@@ -16,8 +16,9 @@ import { ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/mater
  * @param {string} [props.featureFlag] - Optional feature flag key to check
  * @param {string} [props.subFeature] - Optional sub-feature key to check
  * @param {function} [props.onClick] - Optional onClick handler (e.g., for closing mobile menu)
+ * @param {boolean} [props.nested] - Whether this is a nested item (adds indentation)
  */
-export default function NavItem({ href, label, icon: Icon, featureFlag, subFeature = 'ENABLED', onClick }) {
+export default function NavItem({ href, label, icon: Icon, featureFlag, subFeature = 'ENABLED', onClick, nested = false }) {
   const pathname = usePathname();
   const isActive = pathname === href || (href !== '/' && pathname.startsWith(href));
 
@@ -53,9 +54,11 @@ export default function NavItem({ href, label, icon: Icon, featureFlag, subFeatu
         selected={isActive}
         onClick={onClick}
         sx={{
+          pl: nested ? 4 : 2,  // Add extra left padding for nested items
           borderRadius: 1,
-          mb: 0.1, // Further reduced from 0.2 to 0.1 to tighten spacing between menu items
-          py: 0.5,  // Reduce vertical padding inside each item (default is 8px/1)
+          mb: 0.1,
+          mx: 1,
+          py: 0.5,
           '&.Mui-selected': {
             backgroundColor: 'primary.lighter',
             '&:hover': {
@@ -65,7 +68,7 @@ export default function NavItem({ href, label, icon: Icon, featureFlag, subFeatu
         }}
       >
         {Icon && (
-          <ListItemIcon sx={{ minWidth: 40, color: isActive ? 'primary.main' : 'inherit' }}>
+          <ListItemIcon sx={{ minWidth: 36, color: isActive ? 'primary.main' : 'text.secondary' }}>
             <Icon fontSize="small" />
           </ListItemIcon>
         )}
@@ -73,7 +76,8 @@ export default function NavItem({ href, label, icon: Icon, featureFlag, subFeatu
           primary={label}
           primaryTypographyProps={{
             variant: 'body2',
-            fontWeight: isActive ? 'bold' : 'normal',
+            fontSize: nested ? '0.8125rem' : '0.875rem',  // Slightly smaller text for nested items
+            fontWeight: isActive ? 600 : 'normal',
             color: isActive ? 'primary.main' : 'inherit',
           }}
         />
