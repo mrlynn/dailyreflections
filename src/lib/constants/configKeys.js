@@ -39,3 +39,21 @@ export const USER_CONFIG = {
   // Password policy
   PASSWORD_POLICY: 'user.password_policy',
 };
+
+// Game-related configuration keys
+export const GAME_CONFIG = {
+  // Trivia question interval in seconds (how often new questions appear)
+  TRIVIA_QUESTION_INTERVAL: 'game.trivia_question_interval',
+
+  // Trivia answer time limit in seconds
+  TRIVIA_ANSWER_TIME_LIMIT: 'game.trivia_answer_time_limit',
+
+  // Points awarded for correct trivia answer
+  TRIVIA_POINTS_PER_CORRECT: 'game.trivia_points_per_correct',
+
+  // Bonus points for first correct answer
+  TRIVIA_FIRST_ANSWER_BONUS: 'game.trivia_first_answer_bonus',
+
+  // Whether game trivia is enabled
+  TRIVIA_ENABLED: 'game.trivia_enabled',
+};

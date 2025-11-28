@@ -17,6 +17,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import KeyboardIcon from '@mui/icons-material/Keyboard';
 import SearchBar from '@/components/SearchBar';
 import SearchResults from '@/components/SearchResults';
+import UnifiedSearchResults from '@/components/UnifiedSearchResults';
 
 /**
  * Dedicated search page for full-screen searching experience
@@ -29,8 +30,10 @@ function SearchPageContent() {
   // Component state
   const [query, setQuery] = useState(searchParams?.get('q') || '');
   const [results, setResults] = useState([]);
+  const [unifiedResults, setUnifiedResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
+  const [useUnifiedSearch, setUseUnifiedSearch] = useState(true);
 
   // Use effect to run search only once when component mounts
   useEffect(() => {
@@ -51,29 +54,57 @@ function SearchPageContent() {
     setLoading(true);
 
     try {
-      console.log('📤 Sending search request to API...');
-      const response = await fetch('/api/reflections/search', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query: searchQuery,
-          limit: 20,
-          minScore: 0.6,
-        }),
-      });
+      if (useUnifiedSearch) {
+        console.log('📤 Sending unified search request to API...');
+        const response = await fetch('/api/unified-search', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            query: searchQuery,
+            limit: 10,
+          }),
+        });
 
-      console.log('📥 API response status:', response.status);
-      const data = await response.json();
-      console.log('📥 API response data:', data);
+        console.log('📥 API response status:', response.status);
+        const data = await response.json();
+        console.log('📥 API response data:', data);
 
-      if (data.results) {
-        console.log(`✅ Found ${data.results.length} results`);
-        setResults(data.results);
+        if (data.results) {
+          console.log(`✅ Unified search found ${data.totalResults} total results`);
+          setUnifiedResults(data);
+          setResults([]); // Clear old results
+        } else {
+          console.log('❌ No results found or error occurred');
+          setUnifiedResults(null);
+        }
       } else {
-        console.log('❌ No results found or error occurred');
-        setResults([]);
+        console.log('📤 Sending search request to API...');
+        const response = await fetch('/api/reflections/search', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            query: searchQuery,
+            limit: 20,
+            minScore: 0.6,
+          }),
+        });
+
+        console.log('📥 API response status:', response.status);
+        const data = await response.json();
+        console.log('📥 API response data:', data);
+
+        if (data.results) {
+          console.log(`✅ Found ${data.results.length} results`);
+          setResults(data.results);
+          setUnifiedResults(null); // Clear unified results
+        } else {
+          console.log('❌ No results found or error occurred');
+          setResults([]);
+        }
       }
 
       // Update URL with search query for sharing and refreshing, but only if needed
@@ -91,6 +122,7 @@ function SearchPageContent() {
     } catch (error) {
       console.error('Search error:', error);
       setResults([]);
+      setUnifiedResults(null);
     } finally {
       setLoading(false);
     }
@@ -110,6 +142,7 @@ function SearchPageContent() {
   function handleClear() {
     setQuery('');
     setResults([]);
+    setUnifiedResults(null);
 
     // Update URL to remove query parameter
     const url = new URL(window.location);
@@ -165,7 +198,7 @@ function SearchPageContent() {
           </IconButton>
           <Box>
             <Typography variant="h4" component="h1" sx={{ fontWeight: 600, mb: 1 }}>
-              Search Reflections
+              {useUnifiedSearch ? 'Unified Search' : 'Search Reflections'}
             </Typography>
             <Breadcrumbs aria-label="breadcrumb">
               <MuiLink
@@ -181,9 +214,17 @@ function SearchPageContent() {
           </Box>
         </Box>
 
-        <IconButton onClick={toggleKeyboardShortcuts} color="primary">
-          <KeyboardIcon />
-        </IconButton>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Chip
+            label={useUnifiedSearch ? 'All Content' : 'Reflections Only'}
+            color={useUnifiedSearch ? 'primary' : 'default'}
+            onClick={() => setUseUnifiedSearch(!useUnifiedSearch)}
+            sx={{ cursor: 'pointer' }}
+          />
+          <IconButton onClick={toggleKeyboardShortcuts} color="primary">
+            <KeyboardIcon />
+          </IconButton>
+        </Box>
       </Box>
 
       {/* Keyboard shortcuts help */}
@@ -214,16 +255,40 @@ function SearchPageContent() {
       </Box>
 
       {/* Results Area */}
-      <Box sx={{ maxWidth: '800px', mx: 'auto' }}>
+      <Box sx={{ maxWidth: useUnifiedSearch ? '1200px' : '800px', mx: 'auto' }}>
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
             <CircularProgress />
           </Box>
-        ) : (
+        ) : useUnifiedSearch && unifiedResults ? (
+          <UnifiedSearchResults searchData={unifiedResults} />
+        ) : !useUnifiedSearch && results.length > 0 ? (
           <SearchResults results={results} query={query} loading={loading} />
+        ) : null}
+
+        {!loading && useUnifiedSearch && unifiedResults?.totalResults === 0 && query && (
+          <Paper
+            elevation={0}
+            sx={{
+              textAlign: 'center',
+              py: 6,
+              px: 3,
+              borderRadius: 2,
+              backgroundColor: 'rgba(99, 102, 241, 0.04)',
+              border: '1px solid',
+              borderColor: 'divider'
+            }}
+          >
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+              No results found for <strong>"{query}"</strong>. Try a different search term.
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Try using more general terms or check your spelling.
+            </Typography>
+          </Paper>
         )}
 
-        {!loading && results.length === 0 && query && (
+        {!loading && !useUnifiedSearch && results.length === 0 && query && (
           <Paper
             elevation={0}
             sx={{
@@ -262,10 +327,15 @@ function SearchPageContent() {
               Search Tips
             </Typography>
             <Typography variant="body1" sx={{ mb: 1 }}>
-              Search for daily reflections by topic, theme, or keywords
+              {useUnifiedSearch
+                ? 'Search across all content: reflections, journal, Big Book, articles, meetings, and courses'
+                : 'Search for daily reflections by topic, theme, or keywords'}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
               Example searches: <strong>"surrender"</strong>, <strong>"acceptance"</strong>, <strong>"spiritual growth"</strong>, <strong>"step one"</strong>
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              💡 Tip: Toggle between &quot;All Content&quot; and &quot;Reflections Only&quot; modes using the chip above
             </Typography>
           </Paper>
         )}
