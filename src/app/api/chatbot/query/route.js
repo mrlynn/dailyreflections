@@ -4,6 +4,7 @@ import { randomUUID, createHash } from 'crypto';
 import { searchCombinedSources, formatCitations, createLLMPrompt } from '@/lib/chatbotSearch';
 import { parseDateFromQuery, parseDateKey, getTodayKey } from '@/utils/dateUtils';
 import clientPromise from '@/lib/mongodb';
+import { getCachedResponse, setCachedResponse } from '@/lib/responseCache';
 
 // Initialize OpenAI client for generating responses (separate from embedding generation)
 const openai = new OpenAI({
@@ -282,6 +283,40 @@ export async function POST(request) {
       });
     }
 
+    // Step 0.5: Check cache for previous responses (before expensive operations)
+    // Build context for cache key
+    const cacheContext = {
+      hasHistory: chatHistory && chatHistory.length > 0,
+    };
+
+    // Check if we have a cached response for this query
+    const cached = await getCachedResponse(query, cacheContext);
+    if (cached) {
+      console.log(`✅ Cache HIT for query: "${query.substring(0, 50)}..." (hits: ${cached.hits})`);
+      const messageId = `msg_${randomUUID()}`;
+
+      return NextResponse.json({
+        messageId,
+        response: cached.response,
+        citations: cached.citations || [],
+        retrievalContext: cached.metadata?.retrievalContext || [],
+        metadata: {
+          ...cached.metadata,
+          query,
+          cached: true,
+          cacheHit: true,
+          cachedAt: cached.cachedAt,
+          hits: cached.hits,
+          crisis: {
+            detected: false,
+            intent: null,
+          },
+        },
+      });
+    }
+
+    console.log(`❌ Cache MISS for query: "${query.substring(0, 50)}..."`);
+
     // Step 0: Check if query references a specific date reflection
     const dateKey = parseDateFromQuery(query);
     if (dateKey) {
@@ -471,36 +506,54 @@ export async function POST(request) {
 
     console.log('✅ Generated response with citations');
 
+    // Prepare retrieval context for response
+    const retrievalContext = searchResults.map(result => ({
+      source: result.source,
+      reference: result.reference,
+      score: parseFloat(result.score.toFixed(4)),
+      chunkId: result.chunk_id || null,
+      pageNumber: result.page_number || null,
+      dateKey: result.dateKey || null,
+      textSnippet: result.text ? result.text.substring(0, 500) : null,
+      url: result.url || null,
+    }));
+
+    const responseMetadata = {
+      query,
+      llmPrompt: prompt,
+      todaysReflection: todaysReflection ? {
+        title: todaysReflection.title,
+        month: todaysReflection.month,
+        day: todaysReflection.day,
+        reference: todaysReflection.reference,
+        dateKey: `${String(todaysReflection.month).padStart(2, '0')}-${String(todaysReflection.day).padStart(2, '0')}`,
+      } : null,
+      toneCheck: toneResult.toneCheck,
+      crisis: {
+        detected: false,
+        intent: null,
+      },
+      retrievalContext,
+    };
+
+    // Store in cache for future requests (async, don't wait for it)
+    setCachedResponse(
+      query,
+      cacheContext,
+      toneResult.response,
+      citations,
+      responseMetadata,
+      30 // TTL: 30 days
+    ).catch(err => {
+      console.error('Failed to cache response:', err);
+    });
+
     return NextResponse.json({
       messageId,
       response: toneResult.response,
       citations: citations,
-      retrievalContext: searchResults.map(result => ({
-        source: result.source,
-        reference: result.reference,
-        score: parseFloat(result.score.toFixed(4)),
-        chunkId: result.chunk_id || null,
-        pageNumber: result.page_number || null,
-        dateKey: result.dateKey || null,
-        textSnippet: result.text ? result.text.substring(0, 500) : null,
-        url: result.url || null,
-      })),
-      metadata: {
-        query,
-        llmPrompt: prompt,
-        todaysReflection: todaysReflection ? {
-          title: todaysReflection.title,
-          month: todaysReflection.month,
-          day: todaysReflection.day,
-          reference: todaysReflection.reference,
-          dateKey: `${String(todaysReflection.month).padStart(2, '0')}-${String(todaysReflection.day).padStart(2, '0')}`,
-        } : null,
-        toneCheck: toneResult.toneCheck,
-        crisis: {
-          detected: false,
-          intent: null,
-        },
-      }
+      retrievalContext,
+      metadata: responseMetadata,
     });
   } catch (error) {
     console.error('❌ API: Error processing chatbot query:', error);

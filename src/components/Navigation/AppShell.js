@@ -26,6 +26,7 @@ import {
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
+import SearchIcon from '@mui/icons-material/Search';
 import LoginIcon from '@mui/icons-material/Login';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import InfoIcon from '@mui/icons-material/Info';
@@ -384,6 +385,18 @@ export default function AppShell({ children }) {
           {/* Only show sobriety badge when user is authenticated */}
           {!isMobile && session?.user && <SobrietyBadge />}
 
+          {/* Search icon */}
+          <Tooltip title="Search">
+            <IconButton
+              onClick={() => router.push('/search')}
+              color="inherit"
+              sx={{ ml: 1 }}
+              aria-label="Search"
+            >
+              <SearchIcon />
+            </IconButton>
+          </Tooltip>
+
           {/* Lightbulb icon for daily thoughts */}
           {!isMobile && (
             <Tooltip title="Today's Thought">
@@ -508,8 +521,8 @@ export default function AppShell({ children }) {
         component="main"
         sx={{
           flexGrow: 1,
-          marginLeft: { xs: 0, md: isSidebarVisible ? `${drawerWidth}px` : '0' },
-          width: { xs: '100%', md: isSidebarVisible ? `calc(100% - ${drawerWidth}px)` : '100%' },
+          marginLeft: { xs: 0, md: desktopSidebarOpen ? `${drawerWidth}px` : '0' },
+          width: { xs: '100%', md: desktopSidebarOpen ? `calc(100% - ${drawerWidth}px)` : '100%' },
           overflow: 'visible',
           backgroundColor: '#F8F9FA',
           pt: { xs: '56px', sm: '64px' },
