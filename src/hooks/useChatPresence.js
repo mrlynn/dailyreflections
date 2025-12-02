@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAbly } from '@/lib/ablyContext';
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 
@@ -15,6 +15,12 @@ export default function useChatPresence(channelName) {
   const [members, setMembers] = useState([]);
   const [presenceData, setPresenceData] = useState({});
   const [error, setError] = useState(null);
+
+  // Throttle presence updates to avoid rate limiting
+  const lastUpdateTime = useRef(0);
+  const pendingUpdate = useRef(null);
+  const updateTimeout = useRef(null);
+  const THROTTLE_MS = 1000; // Minimum 1 second between presence updates
 
   useEffect(() => {
     // Don't initialize if feature flag is disabled
@@ -101,6 +107,11 @@ export default function useChatPresence(channelName) {
 
       // Cleanup function
       return () => {
+        // Clear pending updates
+        if (updateTimeout.current) {
+          clearTimeout(updateTimeout.current);
+        }
+
         channel.presence.unsubscribe('enter', enterHandler);
         channel.presence.unsubscribe('leave', leaveHandler);
         channel.presence.unsubscribe('update', updateHandler);
@@ -115,10 +126,10 @@ export default function useChatPresence(channelName) {
   }, [client, isConnected, channelName, isRealtimeChatEnabled]);
 
   /**
-   * Update the user's presence data
+   * Update the user's presence data with throttling
    * @param {Object} data - Data to update in presence
    */
-  const updatePresence = async (data) => {
+  const updatePresence = useCallback(async (data) => {
     if (!isRealtimeChatEnabled) {
       throw new Error('Realtime chat feature is not enabled');
     }
@@ -127,18 +138,59 @@ export default function useChatPresence(channelName) {
       throw new Error('Cannot update presence: not connected');
     }
 
-    try {
-      const channel = client.channels.get(channelName);
-      await channel.presence.update({
-        ...presenceData[client.auth.clientId],
-        ...data,
-        lastActive: new Date().toISOString()
-      });
-    } catch (err) {
-      console.error('Error updating presence:', err);
-      throw err;
+    // Store the pending update
+    pendingUpdate.current = {
+      ...pendingUpdate.current,
+      ...data
+    };
+
+    // Clear any existing timeout
+    if (updateTimeout.current) {
+      clearTimeout(updateTimeout.current);
     }
-  };
+
+    const now = Date.now();
+    const timeSinceLastUpdate = now - lastUpdateTime.current;
+
+    // If enough time has passed, update immediately
+    if (timeSinceLastUpdate >= THROTTLE_MS) {
+      try {
+        const channel = client.channels.get(channelName);
+        await channel.presence.update({
+          ...presenceData[client.auth.clientId],
+          ...pendingUpdate.current,
+          lastActive: new Date().toISOString()
+        });
+        lastUpdateTime.current = now;
+        pendingUpdate.current = null;
+      } catch (err) {
+        console.error('Error updating presence:', err);
+        // Don't throw on rate limit errors, just log them
+        if (!err.message?.includes('rate limit')) {
+          throw err;
+        }
+      }
+    } else {
+      // Schedule update for later
+      const delay = THROTTLE_MS - timeSinceLastUpdate;
+      updateTimeout.current = setTimeout(async () => {
+        if (pendingUpdate.current && client && isConnected) {
+          try {
+            const channel = client.channels.get(channelName);
+            await channel.presence.update({
+              ...presenceData[client.auth.clientId],
+              ...pendingUpdate.current,
+              lastActive: new Date().toISOString()
+            });
+            lastUpdateTime.current = Date.now();
+            pendingUpdate.current = null;
+          } catch (err) {
+            console.error('Error updating presence (throttled):', err);
+          }
+        }
+      }, delay);
+    }
+  }, [client, isConnected, channelName, isRealtimeChatEnabled, presenceData]);
 
   /**
    * Check if a user is online in the channel

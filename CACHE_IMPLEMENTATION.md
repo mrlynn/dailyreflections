@@ -107,6 +107,7 @@ curl -X POST /api/cache/warm \
   cacheKey: String,              // SHA-256 hash of query + context
   query: String,                  // Original query text
   normalizedQuery: String,        // Lowercase trimmed query
+  queryEmbedding: Array,          // 1536-dim vector for semantic search
   context: Object,                // Context object (dateKey, etc.)
   response: String,               // LLM's response
   citations: Array,               // Citations/sources
@@ -120,14 +121,50 @@ curl -X POST /api/cache/warm \
 
 **Indexes:**
 ```javascript
+// Standard indexes
 db.response_cache.createIndex({ cacheKey: 1 }, { unique: true });
 db.response_cache.createIndex({ expiresAt: 1 });
 db.response_cache.createIndex({ "context.dateKey": 1 });
 db.response_cache.createIndex({ hits: -1 });
 db.response_cache.createIndex({ normalizedQuery: "text" });
+
+// Vector search index (Atlas Search)
+db.response_cache.createSearchIndex(
+  "query_vector_index",
+  "vectorSearch",
+  {
+    fields: [
+      {
+        type: "vector",
+        path: "queryEmbedding",
+        numDimensions: 1536,
+        similarity: "cosine"
+      }
+    ]
+  }
+);
 ```
 
 ## Cache Strategy
+
+### Semantic Matching with Embeddings 🎯
+
+The cache uses **semantic similarity matching** via OpenAI embeddings to match questions that are similar in meaning but worded differently. This dramatically improves cache hit rates!
+
+**How it works:**
+1. **Exact Match First**: Checks for identical query + context (fastest, ~10ms)
+2. **Semantic Fallback**: Uses vector search to find similar questions (fast, ~50ms)
+3. **Similarity Threshold**: Returns cached response if similarity ≥ 85%
+
+**Example semantic matches:**
+- "What are the 12 steps?" → "Tell me about the twelve steps of AA"
+- "How do I find a meeting?" → "Where can I locate AA meetings near me?"
+- "What is step 4?" → "Explain the fourth step to me"
+
+**Benefits:**
+- 🚀 **Higher cache hit rate**: ~60-80% (vs ~20-30% with exact match only)
+- 💰 **More cost savings**: Fewer OpenAI API calls
+- ⚡ **Better UX**: More questions answered instantly
 
 ### What Gets Cached
 
@@ -142,8 +179,9 @@ db.response_cache.createIndex({ normalizedQuery: "text" });
 - User-specific questions requiring personal context
 - Queries with extensive chat history (context-dependent)
 
-### Cache Keys
+### Cache Keys & Embeddings
 
+**Exact Match Cache Keys:**
 Cache keys are generated from:
 1. Normalized query (lowercase, trimmed)
 2. Context object (sorted keys for consistency)
@@ -155,6 +193,12 @@ Query: "What is Step 4?"
 Context: { hasHistory: false }
 Cache Key: "a3f5b7c9d2e4f6a8b1c3d5e7f9a2b4c6d8e0f2a4b6c8d0e2f4a6b8c0d2e4f6a8"
 ```
+
+**Semantic Search Embeddings:**
+Each cached query also includes:
+- `queryEmbedding`: 1536-dimensional vector from OpenAI `text-embedding-3-small`
+- MongoDB vector search index for fast similarity search
+- Cosine similarity metric (0-1 scale, higher = more similar)
 
 ### TTL (Time To Live)
 
@@ -173,16 +217,27 @@ Default TTLs by category:
 - Average query: ~$0.002 (GPT-4)
 - 1000 queries/day: ~$2/day = $60/month
 
-**With Cache (80% hit rate):**
+**With Exact Match Cache (30% hit rate):**
 - Cached queries: $0
-- New queries (20%): ~$0.40/day = $12/month
-- **Savings: $48/month (80%)**
+- New queries (70%): ~$1.40/day = $42/month
+- **Savings: $18/month (30%)**
+
+**With Semantic Cache (70% hit rate):**
+- Cached queries: $0
+- New queries (30%): ~$0.60/day = $18/month
+- **Savings: $42/month (70%)** 🎉
+
+**Embedding Cost:**
+- `text-embedding-3-small`: ~$0.0001 per query
+- 1000 queries/day: ~$0.10/day = $3/month
+- **Net savings: $39/month (65%)**
 
 ### Response Time
 
-- **Cache hit**: ~50-100ms (database lookup)
-- **Cache miss**: ~2-5s (LLM generation)
-- **Improvement**: 20-50x faster for cached responses
+- **Exact cache hit**: ~10-20ms (hash lookup)
+- **Semantic cache hit**: ~50-100ms (vector search + embedding generation)
+- **Cache miss**: ~2-5s (LLM generation + embedding)
+- **Improvement**: 20-100x faster for cached responses
 
 ## Monitoring
 
@@ -200,10 +255,11 @@ Returns:
 
 ### Logs
 
-Cache operations are logged:
+Cache operations are logged with match type:
 ```
-✅ Cache HIT for query: "What are the 12 steps..." (hits: 15)
-❌ Cache MISS for query: "Tell me about step 4..."
+✅ Exact cache HIT for query: "What are the 12 steps..." (hits: 15)
+✅ Semantic cache HIT! Query: "Tell me about the twelve steps" matched "What are the 12 steps of AA?" (similarity: 92.3%)
+❌ Cache MISS for query: "Tell me about my specific situation..."
 ```
 
 ## Maintenance
@@ -250,12 +306,14 @@ await fetch('/api/cache/manage', {
 
 ## Future Enhancements
 
-- [ ] Semantic similarity matching (cache similar questions)
+- [x] **Semantic similarity matching** (cache similar questions) ✅ IMPLEMENTED
 - [ ] Distributed caching (Redis for faster lookups)
 - [ ] A/B testing cached vs fresh responses
 - [ ] User feedback on cached responses
 - [ ] Auto-warming based on trending queries
 - [ ] Cache preheating based on time of day patterns
+- [ ] Adaptive similarity threshold based on query type
+- [ ] Multi-language embedding support
 
 ## Troubleshooting
 
@@ -269,9 +327,10 @@ await fetch('/api/cache/manage', {
 ### Low hit rate?
 
 1. Review top queries - are they too varied?
-2. Normalize queries better (synonyms, typos)
-3. Implement semantic similarity
-4. Adjust TTL values
+2. Check if semantic search is working (look for "Semantic cache HIT" in logs)
+3. Adjust similarity threshold (currently 0.85) - lower = more matches, but less accurate
+4. Adjust TTL values - longer TTL = more cache hits
+5. Check vector index status: `db.response_cache.getSearchIndexes()`
 
 ### Stale responses?
 

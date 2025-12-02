@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCacheStats, cleanExpiredCache, invalidateCache, invalidateDateCache } from '@/lib/responseCache';
-import { auth } from '@/lib/auth';
+import { getSession } from '@/lib/auth';
 
 /**
  * GET /api/cache/manage
@@ -8,7 +8,7 @@ import { auth } from '@/lib/auth';
  */
 export async function GET(request) {
   try {
-    const session = await auth();
+    const session = await getSession(request);
 
     if (!session?.user?.isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
@@ -40,7 +40,7 @@ export async function GET(request) {
  */
 export async function POST(request) {
   try {
-    const session = await auth();
+    const session = await getSession(request);
 
     if (!session?.user?.isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });

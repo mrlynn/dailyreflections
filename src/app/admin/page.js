@@ -23,6 +23,9 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import EventIcon from '@mui/icons-material/Event';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import InsightsIcon from '@mui/icons-material/Insights';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -162,6 +165,118 @@ export default function AdminDashboard() {
           </Paper>
         </Grid>
 
+        {/* Agentic AI Section */}
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <AutoAwesomeIcon color="secondary" sx={{ mr: 1 }} />
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                Agentic AI Systems
+              </Typography>
+            </Box>
+
+            <Grid container spacing={2} sx={{ mb: 2 }}>
+              <Grid item xs={12} md={4}>
+                <Card variant="outlined">
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <SmartToyIcon color="primary" sx={{ mr: 1 }} />
+                      <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
+                        Chat Assistant
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      AI-powered volunteer support
+                    </Typography>
+                    <List dense>
+                      <ListItem disablePadding>
+                        <ListItemButton component="a" href="/admin/agent-graph">
+                          <AccountTreeIcon fontSize="small" sx={{ mr: 1 }} />
+                          <ListItemText primary="Architecture" secondary="View agent graph" />
+                        </ListItemButton>
+                      </ListItem>
+                      <ListItem disablePadding>
+                        <ListItemButton component="a" href="/admin/agent-metrics">
+                          <BarChartIcon fontSize="small" sx={{ mr: 1 }} />
+                          <ListItemText primary="Metrics" secondary="Performance data" />
+                        </ListItemButton>
+                      </ListItem>
+                      <ListItem disablePadding>
+                        <ListItemButton component="a" href="/admin/rag-sources">
+                          <ChatIcon fontSize="small" sx={{ mr: 1 }} />
+                          <ListItemText primary="Knowledge" secondary="Manage sources" />
+                        </ListItemButton>
+                      </ListItem>
+                    </List>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Card variant="outlined">
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <InsightsIcon color="info" sx={{ mr: 1 }} />
+                      <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
+                        Observation
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      Platform analytics & insights
+                    </Typography>
+                    <ListItemButton
+                      component="a"
+                      href="/admin/system-observation"
+                      sx={{
+                        bgcolor: 'info.light',
+                        color: 'info.contrastText',
+                        '&:hover': { bgcolor: 'info.main' },
+                        borderRadius: 1,
+                        mt: 2
+                      }}
+                    >
+                      <ListItemText
+                        primary="View Dashboard"
+                        secondary="AI-generated insights"
+                      />
+                    </ListItemButton>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Card variant="outlined">
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <AutoAwesomeIcon color="secondary" sx={{ mr: 1 }} />
+                      <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
+                        Art Director
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      Ghibli-style artwork generation
+                    </Typography>
+                    <ListItemButton
+                      component="a"
+                      href="/admin/art-director"
+                      sx={{
+                        bgcolor: 'secondary.light',
+                        color: 'secondary.contrastText',
+                        '&:hover': { bgcolor: 'secondary.main' },
+                        borderRadius: 1,
+                        mt: 2
+                      }}
+                    >
+                      <ListItemText
+                        primary="Manage Art"
+                        secondary="Generate & review"
+                      />
+                    </ListItemButton>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+          </Paper>
+        </Grid>
+
         {/* Quick Links */}
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2 }}>
@@ -196,12 +311,6 @@ export default function AdminDashboard() {
               <ListItem disablePadding>
                 <ListItemButton component="a" href="/admin/moderation">
                   <ListItemText primary="Comment Moderation" secondary="Review and moderate user comments" />
-                </ListItemButton>
-              </ListItem>
-              <Divider />
-              <ListItem disablePadding>
-                <ListItemButton component="a" href="/admin/rag-sources">
-                  <ListItemText primary="RAG Sources Management" secondary="Manage chatbot knowledge sources" />
                 </ListItemButton>
               </ListItem>
               <Divider />

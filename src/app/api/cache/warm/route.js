@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { warmCache } from '@/lib/responseCache';
-import { auth } from '@/lib/auth';
+import { getSession } from '@/lib/auth';
 
 // Common questions that users frequently ask
 const COMMON_QUESTIONS = [
@@ -150,7 +150,7 @@ Remember: The only requirement for AA membership is a desire to stop drinking. T
  */
 export async function POST(request) {
   try {
-    const session = await auth();
+    const session = await getSession(request);
 
     if (!session?.user?.isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
