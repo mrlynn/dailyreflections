@@ -124,25 +124,32 @@ const authOptions = {
         token.email = user.email;
         token.displayName = user.displayName;
 
-        // Check if user exists in the database and get roles and admin status
-        try {
-          const client = await clientPromise;
-          const db = client.db('dailyreflections');
-          const userDoc = await db.collection('users').findOne({ email: user.email });
-          if (userDoc) {
-            token.isAdmin = userDoc.isAdmin === true;
-            token.role = userDoc.role || null;
-            token.roles = userDoc.roles || [];
-          } else {
+        // If user object already has admin status (from authorize function), use it directly
+        if (typeof user.isAdmin !== 'undefined') {
+          token.isAdmin = user.isAdmin;
+          token.roles = user.roles || [];
+          token.role = user.role || null;
+        } else {
+          // Fallback: Check database only if not provided by authorize (e.g., for OAuth providers)
+          try {
+            const client = await clientPromise;
+            const db = client.db('dailyreflections');
+            const userDoc = await db.collection('users').findOne({ email: user.email });
+            if (userDoc) {
+              token.isAdmin = userDoc.isAdmin === true;
+              token.role = userDoc.role || null;
+              token.roles = userDoc.roles || [];
+            } else {
+              token.isAdmin = false;
+              token.role = null;
+              token.roles = [];
+            }
+          } catch (error) {
+            console.error('Error checking user roles/admin status:', error);
             token.isAdmin = false;
             token.role = null;
             token.roles = [];
           }
-        } catch (error) {
-          console.error('Error checking user roles/admin status:', error);
-          token.isAdmin = false;
-          token.role = null;
-          token.roles = [];
         }
       }
       return token;
