@@ -145,7 +145,7 @@ export async function POST(request) {
       history.results.successful = finalState.successful_generations || 0;
       history.results.failed = finalState.failed_generations || 0;
       history.results.skipped = finalState.skipped_generations || 0;
-      history.results.generated_art_ids = finalState.generated_art.map(art => art.asset_id);
+      history.results.generated_art_ids = finalState.generated_art.map(art => art._id);
       history.costs.total_api_calls = finalState.total_api_calls || 0;
       history.costs.total_cost_usd = finalState.total_cost_usd || 0;
       history.errors = finalState.errors || [];

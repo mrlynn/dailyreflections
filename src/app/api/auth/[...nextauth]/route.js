@@ -117,9 +117,10 @@ const authOptions = {
     error: '/login',
   },
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, trigger }) {
       // Initial sign in
       if (user) {
+        console.log('[NextAuth JWT] Initial sign in for user:', user.email);
         token.id = user.id;
         token.email = user.email;
         token.displayName = user.displayName;
@@ -129,8 +130,13 @@ const authOptions = {
           token.isAdmin = user.isAdmin;
           token.roles = user.roles || [];
           token.role = user.role || null;
+          console.log('[NextAuth JWT] Set admin status from user object:', {
+            isAdmin: token.isAdmin,
+            roles: token.roles,
+          });
         } else {
           // Fallback: Check database only if not provided by authorize (e.g., for OAuth providers)
+          console.log('[NextAuth JWT] Checking database for admin status');
           try {
             const client = await clientPromise;
             const db = client.db('dailyreflections');
@@ -139,17 +145,48 @@ const authOptions = {
               token.isAdmin = userDoc.isAdmin === true;
               token.role = userDoc.role || null;
               token.roles = userDoc.roles || [];
+              console.log('[NextAuth JWT] Set admin status from database:', {
+                isAdmin: token.isAdmin,
+                roles: token.roles,
+              });
             } else {
               token.isAdmin = false;
               token.role = null;
               token.roles = [];
+              console.log('[NextAuth JWT] User not found in database');
             }
           } catch (error) {
-            console.error('Error checking user roles/admin status:', error);
+            console.error('[NextAuth JWT] Error checking user roles/admin status:', error);
             token.isAdmin = false;
             token.role = null;
             token.roles = [];
           }
+        }
+      } else if (token.email) {
+        // Token refresh - check if we need to refresh admin status from database
+        // This ensures admin status can be updated without requiring re-login
+        const shouldRefreshFromDB = !token.isAdmin || !token.roles || token.roles.length === 0;
+
+        if (shouldRefreshFromDB) {
+          console.log('[NextAuth JWT] Token refresh - checking database for admin status');
+          try {
+            const client = await clientPromise;
+            const db = client.db('dailyreflections');
+            const userDoc = await db.collection('users').findOne({ email: token.email });
+            if (userDoc) {
+              token.isAdmin = userDoc.isAdmin === true;
+              token.role = userDoc.role || null;
+              token.roles = userDoc.roles || [];
+              console.log('[NextAuth JWT] Refreshed admin status from database:', {
+                isAdmin: token.isAdmin,
+                roles: token.roles,
+              });
+            }
+          } catch (error) {
+            console.error('[NextAuth JWT] Error refreshing admin status:', error);
+          }
+        } else {
+          console.log('[NextAuth JWT] Token refresh, current isAdmin:', token.isAdmin);
         }
       }
       return token;

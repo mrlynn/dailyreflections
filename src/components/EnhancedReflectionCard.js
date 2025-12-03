@@ -476,7 +476,7 @@ export default function EnhancedReflectionCard({ dateKey, onNavigate }) {
         </Box>
 
         {/* Similar Reflections */}
-        <SimilarReflections sourceDate={dateKey} />
+        <SimilarReflections dateKey={dateKey} />
       </Box>
 
       {/* Modals and Snackbars */}

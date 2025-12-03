@@ -122,14 +122,14 @@ export const generateDailyReflectionArt = tool(
       // Enhance with Ghibli style
       const enhancedPrompt = enhanceWithGhibliStyle(basePrompt, style_level);
 
-      // Generate image
+      // Generate image (landscape format for hero headers)
       const result = await generateImageWithDALLE(enhancedPrompt, {
-        size: '1024x1024',
+        size: '1792x1024',
         quality: 'standard',
         style: 'natural',
       });
 
-      const cost = calculateDALLECost('1024x1024', 'standard');
+      const cost = calculateDALLECost('1792x1024', 'standard');
 
       return JSON.stringify({
         success: true,
@@ -148,7 +148,7 @@ export const generateDailyReflectionArt = tool(
           color_palette: ['warm', 'pastel', 'nature-inspired'],
           mood: 'peaceful',
           elements: ['nature', 'sky', 'light'],
-          composition: 'centered',
+          composition: 'panoramic',
         },
       });
     } catch (error) {

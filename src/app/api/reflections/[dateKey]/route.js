@@ -1,21 +1,52 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { parseDateKey } from '@/utils/dateUtils';
+import { connectToMongoose } from '@/lib/mongoose';
+import GeneratedArt from '@/lib/models/GeneratedArt';
 
 /**
  * Check if an image exists for a specific dateKey
- * This version is production-safe and doesn't use filesystem checks
- * @param {string} dateKey - Date key in MM-DD format
+ * Checks GeneratedArt model first, then falls back to legacy location
+ * @param {string} dateKey - Date key in MM-DD format (e.g., "12-02")
  * @returns {Promise<{exists: boolean, format: string, url: string}>} - Image info
  */
 async function getImageInfo(dateKey) {
-  // First, check for JPG format (preferred)
+  try {
+    // Connect to mongoose to query GeneratedArt model
+    await connectToMongoose();
+
+    // Convert MM-DD to YYYY-MM-DD format for the current year
+    const currentYear = new Date().getFullYear();
+    const fullDate = `${currentYear}-${dateKey}`;
+
+    // Check if there's generated art for this date
+    const generatedArt = await GeneratedArt.findOne({
+      art_type: 'daily_reflection',
+      'content_reference.reference_value': fullDate,
+      status: 'completed',
+      'usage.active': true,
+    })
+      .sort({ version: -1, createdAt: -1 })
+      .lean();
+
+    if (generatedArt && generatedArt.image) {
+      // Use stored_url (permanent storage) if available, otherwise fall back to OpenAI CDN url
+      const imageUrl = generatedArt.image.stored_url || generatedArt.image.url;
+
+      return {
+        exists: true,
+        format: generatedArt.image.format || 'png',
+        url: imageUrl,
+      };
+    }
+  } catch (error) {
+    console.error('Error checking GeneratedArt:', error);
+    // Continue to fallback below
+  }
+
+  // Fallback: Legacy image location
   const jpgUrl = `/reflections/${dateKey}.jpg`;
 
-  // We assume the file exists if it's in the expected format
-  // This is safe because in both development and production:
-  // - If the file exists at this path, it will load
-  // - If not, the Image component will handle the error and fall back
   return {
     exists: true, // We assume it exists and let the frontend handle any load failures
     format: 'jpg',

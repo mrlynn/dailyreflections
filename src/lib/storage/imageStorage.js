@@ -31,21 +31,25 @@ function isProduction() {
 async function uploadToS3({ key, buffer, contentType = 'image/jpeg' }) {
   const bucket = process.env.S3_BUCKET || 'dailyreflections';
 
-  await s3Client.send(
-    new PutObjectCommand({
-      Bucket: bucket,
-      Key: key,
-      Body: buffer,
-      ContentType: contentType,
-      CacheControl: 'public,max-age=31536000,immutable',
-      ACL: 'public-read',
-    })
-  );
+  const params = {
+    Bucket: bucket,
+    Key: key,
+    Body: buffer,
+    ContentType: contentType,
+    CacheControl: 'public,max-age=31536000,immutable',
+  };
+
+  // Only add ACL if explicitly configured (many buckets have ACLs disabled)
+  if (process.env.S3_USE_ACL === 'true') {
+    params.ACL = 'public-read';
+  }
+
+  await s3Client.send(new PutObjectCommand(params));
 
   // Construct CDN URL
   const cdnBaseUrl =
     process.env.CDN_BASE_URL ||
-    `https://${bucket}.${process.env.S3_ENDPOINT?.replace(/^https?:\/\//, '') || 's3.amazonaws.com'}`;
+    `https://${bucket}.s3.${process.env.S3_REGION || 'us-east-1'}.amazonaws.com`;
 
   return `${cdnBaseUrl.replace(/\/$/, '')}/${key}`;
 }
@@ -62,7 +66,7 @@ async function saveToLocalFilesystem({ filename, buffer }) {
   const fs = await import('fs');
   const path = await import('path');
 
-  const publicDir = path.join(process.cwd(), 'public', 'reflections');
+  const publicDir = path.join(process.cwd(), 'public', 'generated-art');
 
   // Create directory if it doesn't exist
   try {
@@ -74,7 +78,7 @@ async function saveToLocalFilesystem({ filename, buffer }) {
   const localPath = path.join(publicDir, filename);
   await fs.promises.writeFile(localPath, buffer);
 
-  return `/reflections/${filename}`;
+  return `/generated-art/${filename}`;
 }
 
 /**
@@ -113,11 +117,11 @@ export async function downloadAndSaveImage(imageUrl, filename) {
     if (isProduction()) {
       // Production: Upload to S3/R2
       console.log('[Image Storage] Production mode - uploading to S3/R2');
-      const key = `reflections/${filename}`;
+      const key = `generated-art/${filename}`;
       cdnUrl = await uploadToS3({
         key,
         buffer,
-        contentType: 'image/jpeg',
+        contentType: filename.endsWith('.png') ? 'image/png' : 'image/jpeg',
       });
       publicUrl = cdnUrl; // Same URL for production
       console.log(`[Image Storage] Uploaded to S3: ${cdnUrl}`);
@@ -171,7 +175,7 @@ export async function imageExists(filename) {
     // In development, check local filesystem
     const fs = await import('fs');
     const path = await import('path');
-    const localPath = path.join(process.cwd(), 'public', 'reflections', filename);
+    const localPath = path.join(process.cwd(), 'public', 'generated-art', filename);
     try {
       await fs.promises.access(localPath, fs.constants.F_OK);
       return true;

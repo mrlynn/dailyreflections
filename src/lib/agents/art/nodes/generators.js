@@ -5,6 +5,7 @@ import {
   generateMilestoneBadge,
   generateSeasonalGraphic,
 } from '../tools.js';
+import { downloadAndSaveImage } from '../../../storage/imageStorage.js';
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -26,7 +27,25 @@ import {
  */
 async function saveGeneratedArt(artData, configuration) {
   try {
+    // Generate unique asset_id
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 8);
+    const asset_id = `art_${artData.art_type}_${timestamp}_${random}`;
+
+    // Download image from OpenAI CDN and upload to permanent storage (S3/local)
+    console.log('📥 Downloading and saving image to permanent storage...');
+    const filename = `${asset_id}.png`;
+    const storageResult = await downloadAndSaveImage(artData.image_url, filename);
+
+    if (!storageResult.success) {
+      console.warn('⚠️  Failed to save to permanent storage:', storageResult.error);
+      console.warn('⚠️  Will use OpenAI CDN URL as fallback');
+    } else {
+      console.log(`✅ Image saved to permanent storage: ${storageResult.publicUrl}`);
+    }
+
     const generatedArt = new GeneratedArt({
+      asset_id,
       art_type: artData.art_type,
       content_reference: {
         reference_key: artData.reference.key,
@@ -39,11 +58,12 @@ async function saveGeneratedArt(artData, configuration) {
         model_parameters: artData.model_parameters,
       },
       image: {
-        url: artData.image_url,
-        // stored_url will be set later when we move to permanent storage
+        url: artData.image_url, // OpenAI CDN URL (temporary, expires in ~1 hour)
+        stored_url: storageResult.success ? storageResult.publicUrl : null, // Permanent storage URL
         width: artData.model_parameters.size.split('x')[0],
         height: artData.model_parameters.size.split('x')[1],
         format: 'png',
+        size_bytes: storageResult.success ? storageResult.size : undefined,
       },
       style_characteristics: artData.style_characteristics,
       generation: {
@@ -63,6 +83,7 @@ async function saveGeneratedArt(artData, configuration) {
 
     await generatedArt.save();
     console.log(`💾 Saved to database with ID: ${generatedArt._id}`);
+    console.log(`🔗 Permanent URL: ${generatedArt.image.stored_url || 'N/A (using OpenAI CDN)'}`);
 
     return generatedArt;
   } catch (error) {
@@ -105,6 +126,7 @@ export async function generateDailyReflectionNode(state) {
       total_cost_usd: artData.cost_usd,
       total_api_calls: 1,
       generated_art: [{
+        _id: savedArt._id,
         asset_id: savedArt.asset_id,
         reference: artData.reference,
         image_url: artData.image_url,
@@ -165,6 +187,7 @@ export async function generateStepIllustrationNode(state) {
       total_cost_usd: artData.cost_usd,
       total_api_calls: 1,
       generated_art: [{
+        _id: savedArt._id,
         asset_id: savedArt.asset_id,
         reference: artData.reference,
         image_url: artData.image_url,
@@ -223,6 +246,7 @@ export async function generateMilestoneBadgeNode(state) {
       total_cost_usd: artData.cost_usd,
       total_api_calls: 1,
       generated_art: [{
+        _id: savedArt._id,
         asset_id: savedArt.asset_id,
         reference: artData.reference,
         image_url: artData.image_url,
@@ -281,6 +305,7 @@ export async function generateSeasonalGraphicNode(state) {
       total_cost_usd: artData.cost_usd,
       total_api_calls: 1,
       generated_art: [{
+        _id: savedArt._id,
         asset_id: savedArt.asset_id,
         reference: artData.reference,
         image_url: artData.image_url,

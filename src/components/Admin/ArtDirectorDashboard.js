@@ -29,6 +29,8 @@ import {
   ListItemText,
   CardActions,
   Snackbar,
+  IconButton,
+  Divider,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import AddIcon from '@mui/icons-material/Add';
@@ -37,6 +39,10 @@ import HistoryIcon from '@mui/icons-material/History';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
+import CloseIcon from '@mui/icons-material/Close';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ArtDirectorVisualization from './ArtDirectorVisualization';
 
 /**
@@ -248,6 +254,7 @@ function StatCard({ title, value, icon }) {
 function ArtGalleryTab({ artworks }) {
   const [processingId, setProcessingId] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
 
   if (artworks.length === 0) {
     return (
@@ -334,18 +341,69 @@ function ArtGalleryTab({ artworks }) {
 
   return (
     <>
-      <Grid container spacing={2}>
-        {artworks.map((artwork) => (
-          <Grid item xs={12} sm={6} md={4} key={artwork._id}>
-            <Card>
-              <CardMedia
-                component="img"
-                height="300"
-                image={artwork.image.url || artwork.image.stored_url}
-                alt={artwork.content_reference.reference_value}
-                sx={{ objectFit: 'cover' }}
-              />
-              <CardContent>
+      <Grid container spacing={3}>
+        {artworks.map((artwork, index) => (
+          <Grid item xs={12} sm={6} md={4} lg={3} key={artwork._id}>
+            <Card
+              sx={{
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: 6,
+                },
+              }}
+            >
+              <Box
+                sx={{
+                  position: 'relative',
+                  cursor: 'pointer',
+                  overflow: 'hidden',
+                  '&:hover .zoom-overlay': {
+                    opacity: 1,
+                  },
+                  '&:hover img': {
+                    transform: 'scale(1.05)',
+                  },
+                }}
+                onClick={() => setSelectedImageIndex(index)}
+              >
+                <CardMedia
+                  component="img"
+                  height="280"
+                  image={artwork.image.stored_url || artwork.image.url}
+                  alt={artwork.content_reference.reference_value}
+                  sx={{
+                    objectFit: 'cover',
+                    transition: 'transform 0.3s ease-in-out',
+                  }}
+                />
+                <Box
+                  className="zoom-overlay"
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    bgcolor: 'rgba(0, 0, 0, 0.6)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    opacity: 0,
+                    transition: 'opacity 0.2s',
+                  }}
+                >
+                  <ZoomInIcon sx={{ color: 'white', fontSize: 48, mb: 1 }} />
+                  <Typography variant="caption" sx={{ color: 'white' }}>
+                    Click to enlarge
+                  </Typography>
+                </Box>
+              </Box>
+              <CardContent sx={{ flexGrow: 1 }}>
                 <Typography variant="h6" gutterBottom>
                   {artwork.art_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                 </Typography>
@@ -410,6 +468,18 @@ function ArtGalleryTab({ artworks }) {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      {/* Image Viewer Dialog */}
+      {selectedImageIndex !== null && (
+        <ImageViewerDialog
+          artwork={artworks[selectedImageIndex]}
+          onClose={() => setSelectedImageIndex(null)}
+          onNext={() => setSelectedImageIndex((selectedImageIndex + 1) % artworks.length)}
+          onPrevious={() => setSelectedImageIndex((selectedImageIndex - 1 + artworks.length) % artworks.length)}
+          hasNext={selectedImageIndex < artworks.length - 1}
+          hasPrevious={selectedImageIndex > 0}
+        />
+      )}
     </>
   );
 }
@@ -465,6 +535,226 @@ function GenerationHistoryTab({ history }) {
         </Paper>
       ))}
     </List>
+  );
+}
+
+// Image Viewer Dialog
+function ImageViewerDialog({ artwork, onClose, onNext, onPrevious, hasNext, hasPrevious }) {
+  if (!artwork) return null;
+
+  return (
+    <Dialog
+      open={true}
+      onClose={onClose}
+      maxWidth="xl"
+      fullWidth
+      slotProps={{
+        paper: {
+          sx: {
+            bgcolor: 'rgba(0, 0, 0, 0.95)',
+            color: 'white',
+          },
+        },
+      }}
+    >
+      {/* Header */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
+        <Typography variant="h6">
+          {artwork.art_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} - {artwork.content_reference.reference_value}
+        </Typography>
+        <IconButton onClick={onClose} sx={{ color: 'white' }}>
+          <CloseIcon />
+        </IconButton>
+      </Box>
+
+      <DialogContent sx={{ p: 0, position: 'relative' }}>
+        {/* Main Image */}
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            minHeight: '60vh',
+            maxHeight: '70vh',
+            bgcolor: 'black',
+            position: 'relative',
+          }}
+        >
+          {/* Previous Button */}
+          {hasPrevious && (
+            <IconButton
+              onClick={onPrevious}
+              sx={{
+                position: 'absolute',
+                left: 16,
+                color: 'white',
+                bgcolor: 'rgba(255, 255, 255, 0.1)',
+                '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.2)' },
+              }}
+            >
+              <ArrowBackIcon />
+            </IconButton>
+          )}
+
+          <img
+            src={artwork.image.stored_url || artwork.image.url}
+            alt={artwork.content_reference.reference_value}
+            style={{
+              maxWidth: '100%',
+              maxHeight: '70vh',
+              objectFit: 'contain',
+            }}
+          />
+
+          {/* Next Button */}
+          {hasNext && (
+            <IconButton
+              onClick={onNext}
+              sx={{
+                position: 'absolute',
+                right: 16,
+                color: 'white',
+                bgcolor: 'rgba(255, 255, 255, 0.1)',
+                '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.2)' },
+              }}
+            >
+              <ArrowForwardIcon />
+            </IconButton>
+          )}
+        </Box>
+
+        {/* Metadata Panel */}
+        <Box sx={{ p: 3, bgcolor: 'rgba(255, 255, 255, 0.05)' }}>
+          <Grid container spacing={3}>
+            {/* Left Column */}
+            <Grid item xs={12} md={6}>
+              <Typography variant="subtitle2" color="grey.400" gutterBottom>
+                STATUS
+              </Typography>
+              <Box sx={{ mb: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                <Chip
+                  label={artwork.status}
+                  size="small"
+                  color={artwork.status === 'completed' ? 'success' : 'default'}
+                />
+                {artwork.quality_review?.approved && (
+                  <Chip label="Deployed" size="small" color="primary" />
+                )}
+                {artwork.quality_review?.approved === false && (
+                  <Chip label="Rejected" size="small" color="error" />
+                )}
+              </Box>
+
+              <Typography variant="subtitle2" color="grey.400" gutterBottom>
+                ASSET ID
+              </Typography>
+              <Typography variant="body2" sx={{ mb: 2, fontFamily: 'monospace' }}>
+                {artwork.asset_id}
+              </Typography>
+
+              <Typography variant="subtitle2" color="grey.400" gutterBottom>
+                GENERATION MODEL
+              </Typography>
+              <Typography variant="body2" sx={{ mb: 2 }}>
+                {artwork.prompt?.generation_model || 'dall-e-3'} • {artwork.prompt?.model_parameters?.quality || 'standard'} quality • {artwork.prompt?.model_parameters?.size || '1024x1024'}
+              </Typography>
+
+              <Typography variant="subtitle2" color="grey.400" gutterBottom>
+                COST
+              </Typography>
+              <Typography variant="body2" sx={{ mb: 2 }}>
+                ${artwork.generation?.cost_usd?.toFixed(4) || '0.0000'}
+              </Typography>
+
+              <Typography variant="subtitle2" color="grey.400" gutterBottom>
+                CREATED
+              </Typography>
+              <Typography variant="body2" sx={{ mb: 2 }}>
+                {new Date(artwork.createdAt).toLocaleString()}
+              </Typography>
+
+              <Typography variant="subtitle2" color="grey.400" gutterBottom>
+                STORAGE
+              </Typography>
+              <Box sx={{ mb: 2, display: 'flex', gap: 1, alignItems: 'center' }}>
+                {artwork.image.stored_url ? (
+                  <Chip
+                    label="Permanent Storage (S3)"
+                    size="small"
+                    color="success"
+                    icon={<CheckCircleIcon />}
+                  />
+                ) : (
+                  <Chip
+                    label="Temporary (OpenAI CDN)"
+                    size="small"
+                    color="warning"
+                    icon={<ErrorIcon />}
+                  />
+                )}
+              </Box>
+            </Grid>
+
+            {/* Right Column */}
+            <Grid item xs={12} md={6}>
+              <Typography variant="subtitle2" color="grey.400" gutterBottom>
+                ENHANCED PROMPT
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  mb: 2,
+                  maxHeight: '120px',
+                  overflowY: 'auto',
+                  p: 1.5,
+                  bgcolor: 'rgba(0, 0, 0, 0.3)',
+                  borderRadius: 1,
+                  fontStyle: 'italic',
+                  fontSize: '0.875rem',
+                }}
+              >
+                {artwork.prompt?.enhanced_prompt || 'No prompt available'}
+              </Typography>
+
+              {artwork.style_characteristics?.mood && (
+                <>
+                  <Typography variant="subtitle2" color="grey.400" gutterBottom>
+                    STYLE CHARACTERISTICS
+                  </Typography>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2">
+                      <strong>Mood:</strong> {artwork.style_characteristics.mood}
+                    </Typography>
+                    {artwork.style_characteristics.elements && (
+                      <Typography variant="body2">
+                        <strong>Elements:</strong> {artwork.style_characteristics.elements.join(', ')}
+                      </Typography>
+                    )}
+                    {artwork.style_characteristics.composition && (
+                      <Typography variant="body2">
+                        <strong>Composition:</strong> {artwork.style_characteristics.composition}
+                      </Typography>
+                    )}
+                  </Box>
+                </>
+              )}
+
+              {artwork.usage?.usage_count > 0 && (
+                <>
+                  <Typography variant="subtitle2" color="grey.400" gutterBottom>
+                    USAGE
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 2 }}>
+                    Used {artwork.usage.usage_count} times
+                    {artwork.usage.last_used_at && ` • Last used ${new Date(artwork.usage.last_used_at).toLocaleDateString()}`}
+                  </Typography>
+                </>
+              )}
+            </Grid>
+          </Grid>
+        </Box>
+      </DialogContent>
+    </Dialog>
   );
 }
 
