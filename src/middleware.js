@@ -31,33 +31,11 @@ export async function middleware(request) {
 
   // Check admin route protection
   if (pathname.startsWith('/admin') && !pathname.startsWith('/admin-test')) {
-    // Debug logging for production issues
-    if (!token) {
-      console.log('[Middleware] No token found for admin route:', pathname);
-    } else {
-      console.log('[Middleware] Token found for admin route:', {
-        pathname,
-        email: token.email,
-        isAdmin: token.isAdmin,
-        isAdminType: typeof token.isAdmin,
-        roles: token.roles,
-        hasId: !!token.id,
-        tokenKeys: Object.keys(token),
-      });
-
-      if (!token.isAdmin) {
-        console.log('[Middleware] ⚠️ User not admin - redirecting to home');
-      }
-    }
-
     // If the user isn't logged in or doesn't have admin privileges, redirect to home
     if (!token || !token.isAdmin) {
       const url = new URL('/', request.url);
-      console.log('[Middleware] Redirecting to:', url.toString());
       return NextResponse.redirect(url);
     }
-
-    console.log('[Middleware] ✅ Admin access granted for:', pathname);
   }
 
   // Check volunteer route protection

@@ -377,7 +377,6 @@ export default function ArticlePageClient({ article, relatedArticles = [], previ
                     backgroundColor: 'grey.200',
                     '& img': {
                       imageRendering: 'auto',
-                      imageRendering: '-webkit-optimize-contrast',
                     },
                   }}
                 >

@@ -149,7 +149,7 @@ export default function RealtimeVolunteerChat({
     return () => {
       clearInterval(statusPolling);
     };
-  }, [sessionId, initialSession, initialMessages]);
+  }, [sessionId, initialSession, initialMessages, isRealtimeChatEnabled]);
 
   // Calculate chat metrics based on messages and session
   const updateChatMetrics = () => {

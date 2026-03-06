@@ -40,6 +40,7 @@ import KeyIcon from '@mui/icons-material/Key';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import PageHeader from '@/components/PageHeader';
 import { alpha } from '@mui/material/styles';
+import { cleanQuoteForDisplay } from '@/lib/sanitize';
 
 export default function StepDetailPage() {
   const [stepNumber, setStepNumber] = useState(0);
@@ -856,7 +857,7 @@ export default function StepDetailPage() {
                                         />
                                       </Box>
                                       <Typography variant="body2" color="text.secondary" noWrap sx={{ mb: 2 }}>
-                                        {reflection.quote?.substring(0, 100)}...
+                                        {cleanQuoteForDisplay(reflection.quote)?.substring(0, 100)}...
                                       </Typography>
                                       <Button
                                         component={Link}

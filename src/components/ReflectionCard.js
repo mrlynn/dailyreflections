@@ -20,6 +20,7 @@ import LinkIcon from '@mui/icons-material/Link';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import DOMPurify from 'dompurify';
+import { cleanQuoteForDisplay } from '@/lib/sanitize';
 import SimilarReflections from '@/components/SimilarReflections';
 import ImageInfoModal from './ImageInfoModal';
 import { useRouter } from 'next/navigation';
@@ -284,7 +285,7 @@ export default function ReflectionCard({ dateKey }) {
               color: 'text.primary'
             }}
           >
-            {reflection.quote}
+            {cleanQuoteForDisplay(reflection.quote)}
           </Typography>
           {/* Reference */}
         <Typography

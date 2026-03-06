@@ -7,24 +7,35 @@ import {
   Container,
   Box,
   Typography,
+  IconButton,
   Button,
+  Grid,
+  Paper,
+  Stack,
   useMediaQuery,
   useTheme,
+  Breadcrumbs,
 } from '@mui/material';
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import HomeIcon from '@mui/icons-material/Home';
-import EnhancedReflectionCard from '@/components/EnhancedReflectionCard';
-import EnhancedCommentList from '@/components/EnhancedCommentList';
+import ReflectionCard from '@/components/ReflectionCard';
+import CommentList from '@/components/CommentList';
+import SearchBar from '@/components/SearchBar';
 import { formatDateKey, getTodayKey } from '@/utils/dateUtils';
 
-export default function EnhancedDateReflectionPage() {
+export default function DateReflectionPage() {
   const params = useParams();
   const router = useRouter();
   const [dateKey, setDateKey] = useState('');
   const [isValidDateFormat, setIsValidDateFormat] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const todayKey = useMemo(() => getTodayKey(), []);
+  const formattedDate = dateKey ? formatDateKey(dateKey) : '';
+  const isToday = dateKey === todayKey;
 
   useEffect(() => {
     if (!params || !params.dateKey) return;
@@ -38,32 +49,40 @@ export default function EnhancedDateReflectionPage() {
     }
   }, [params]);
 
-  const handleNavigate = useCallback((direction) => {
+  const handlePrevDay = useCallback(() => {
     if (!dateKey) return;
 
     const [month, day] = dateKey.split('-').map(Number);
     let newMonth = month;
-    let newDay = day;
+    let newDay = day - 1;
 
-    if (direction === 'prev') {
-      newDay = day - 1;
-      if (newDay === 0) {
-        newMonth = newMonth - 1;
-        if (newMonth === 0) {
-          newMonth = 12;
-        }
-        const daysInMonth = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-        newDay = daysInMonth[newMonth - 1];
+    if (newDay === 0) {
+      newMonth = newMonth - 1;
+      if (newMonth === 0) {
+        newMonth = 12;
       }
-    } else {
-      newDay = day + 1;
       const daysInMonth = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-      if (newDay > daysInMonth[newMonth - 1]) {
-        newDay = 1;
-        newMonth = newMonth + 1;
-        if (newMonth > 12) {
-          newMonth = 1;
-        }
+      newDay = daysInMonth[newMonth - 1];
+    }
+
+    const newDateKey = `${String(newMonth).padStart(2, '0')}-${String(newDay).padStart(2, '0')}`;
+    router.push(`/${newDateKey}`);
+  }, [dateKey, router]);
+
+  const handleNextDay = useCallback(() => {
+    if (!dateKey) return;
+
+    const [month, day] = dateKey.split('-').map(Number);
+    let newMonth = month;
+    let newDay = day + 1;
+
+    const daysInMonth = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+    if (newDay > daysInMonth[newMonth - 1]) {
+      newDay = 1;
+      newMonth = newMonth + 1;
+      if (newMonth > 12) {
+        newMonth = 1;
       }
     }
 
@@ -71,7 +90,7 @@ export default function EnhancedDateReflectionPage() {
     router.push(`/${newDateKey}`);
   }, [dateKey, router]);
 
-  // Keyboard shortcuts
+  // Keyboard shortcuts for date navigation
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
@@ -80,16 +99,23 @@ export default function EnhancedDateReflectionPage() {
 
       if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
         e.preventDefault();
-        handleNavigate('prev');
+        handlePrevDay();
       } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
         e.preventDefault();
-        handleNavigate('next');
+        handleNextDay();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleNavigate]);
+  }, [handlePrevDay, handleNextDay]);
+
+  // Handle search
+  const handleSearch = (query) => {
+    if (query) {
+      router.push(`/search?q=${encodeURIComponent(query)}`);
+    }
+  };
 
   if (!isValidDateFormat && params.dateKey) {
     return (
@@ -108,77 +134,490 @@ export default function EnhancedDateReflectionPage() {
   }
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, rgba(243,244,246,0.5) 0%, rgba(229,231,235,0.3) 100%)',
-      }}
-    >
-      {/* Subtle top navigation bar */}
+    <>
+      {/* Hero Section with Background Gradient */}
       <Box
         sx={{
-          position: 'sticky',
-          top: 0,
-          backgroundColor: 'rgba(255, 255, 255, 0.8)',
-          backdropFilter: 'blur(10px)',
-          borderBottom: '1px solid',
-          borderColor: 'rgba(0,0,0,0.06)',
-          py: 1.5,
-          px: 3,
-          zIndex: 100,
+          background: 'linear-gradient(135deg, rgba(99,102,241,0.05) 0%, rgba(79,70,229,0.02) 100%)',
+          py: { xs: 3, md: 4 },
+          borderBottom: '1px solid rgba(226, 232, 240, 0.5)'
         }}
       >
-        <Container maxWidth="xl">
-          <Button
-            component={Link}
-            href="/"
-            startIcon={<HomeIcon />}
-            sx={{
-              color: 'text.secondary',
-              '&:hover': {
-                color: 'primary.main',
-                backgroundColor: 'transparent',
-              },
-            }}
+        <Container maxWidth="xl" sx={{ px: { xs: 2, md: 3 } }}>
+          {/* Navigation and Breadcrumbs */}
+          <Box sx={{ mb: 1 }}>
+            <Breadcrumbs aria-label="breadcrumb">
+              <Button
+                component={Link}
+                href="/"
+                color="primary"
+                startIcon={<HomeIcon />}
+                sx={{ fontWeight: 500 }}
+              >
+                Home
+              </Button>
+              <Typography color="text.primary">{formattedDate}</Typography>
+            </Breadcrumbs>
+          </Box>
+
+          {/* Page Title and Search */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2, mb: 3 }}>
+            <Typography
+              variant="h4"
+              component="h1"
+              sx={{
+                fontWeight: 700,
+                mt: 1,
+                fontFamily: 'var(--font-poppins)',
+                color: '#2C3E50',
+              }}
+            >
+              Daily Reflection
+            </Typography>
+
+            {/* Search Bar */}
+            <Box sx={{ minWidth: { xs: '100%', sm: '320px' }, maxWidth: '520px' }}>
+              <SearchBar
+                onSearch={handleSearch}
+                sx={{ width: '100%' }}
+              />
+            </Box>
+          </Box>
+
+          {/* Date Navigation - Enhanced for better mobile experience */}
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="space-between"
+            flexDirection={{ xs: 'column', sm: 'row' }}
+            gap={2}
           >
-            Home
-          </Button>
+            {/* Navigation Controls */}
+            <Box
+              display="flex"
+              alignItems="center"
+              gap={1.5}
+              sx={{
+                width: { xs: '100%', sm: 'auto' },
+                justifyContent: { xs: 'center', sm: 'flex-start' },
+                mb: { xs: 2, sm: 0 }
+              }}
+            >
+              <IconButton
+                onClick={handlePrevDay}
+                color="primary"
+                size="large"
+                aria-label="Previous day"
+                sx={{
+                  backgroundColor: 'rgba(28, 110, 127, 0.07)',
+                  '&:hover': {
+                    backgroundColor: 'rgba(28, 110, 127, 0.15)',
+                    transform: 'translateX(-2px)'
+                  }
+                }}
+              >
+                <ArrowBackIosIcon />
+              </IconButton>
+
+              <Typography
+                variant="h6"
+                component="div"
+                sx={{
+                  fontFamily: 'var(--font-poppins)',
+                  color: '#2C3E50',
+                  fontWeight: 600,
+                  px: 2
+                }}
+              >
+                {formattedDate}
+              </Typography>
+
+              <IconButton
+                onClick={handleNextDay}
+                color="primary"
+                size="large"
+                aria-label="Next day"
+                sx={{
+                  backgroundColor: 'rgba(44, 62, 80, 0.07)',
+                  '&:hover': {
+                    backgroundColor: 'rgba(44, 62, 80, 0.15)',
+                    transform: 'translateX(2px)'
+                  }
+                }}
+              >
+                <ArrowForwardIosIcon />
+              </IconButton>
+            </Box>
+          </Box>
         </Container>
       </Box>
 
       {/* Main Content */}
-      {dateKey ? (
-        <Box sx={{ pb: 8 }}>
-          <EnhancedReflectionCard
-            dateKey={dateKey}
-            onNavigate={handleNavigate}
-          />
+      <Container maxWidth="xl" sx={{ py: { xs: 3, md: 5 }, px: { xs: 2, md: 3 } }}>
+        {dateKey ? (
+          <Grid container spacing={4} alignItems="flex-start">
+            <Grid item xs={12} lg={8}>
+              <ReflectionCard dateKey={dateKey} />
 
-          {/* Community Reflections Section */}
-          <Container maxWidth="lg" sx={{ mt: 8 }}>
-            <Typography
-              variant="h3"
-              component="h2"
-              sx={{
-                mb: 5,
-                fontWeight: 700,
-                textAlign: 'center',
-                color: 'text.primary',
-                fontSize: { xs: '2rem', md: '2.5rem' },
-              }}
-            >
-              Community Reflections
+              <Box
+                sx={{
+                  width: '100%',
+                  height: '1px',
+                  background: 'linear-gradient(to right, rgba(226, 228, 235, 0), rgba(226, 228, 235, 1), rgba(226, 228, 235, 0))',
+                  my: { xs: 4, md: 5 }
+                }}
+              />
+
+              <Box sx={{ pt: 1 }}>
+                <Typography
+                  variant="h5"
+                  component="h2"
+                  sx={{
+                    mb: 3,
+                    fontFamily: 'var(--font-poppins)',
+                    color: '#2C3E50',
+                    fontSize: { xs: '1.5rem', md: '1.75rem' },
+                    fontWeight: 600,
+                    letterSpacing: '-0.01em',
+                  }}
+                >
+                  Community Reflections
+                </Typography>
+                <CommentList dateKey={dateKey} />
+              </Box>
+            </Grid>
+
+            <Grid item xs={12} lg={4}>
+              <Box sx={{ mb: 4 }}>
+                <Box
+                  sx={{
+                    mb: 3,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    borderBottom: '1px solid',
+                    borderColor: 'divider',
+                    pb: 1.5
+                  }}
+                >
+                  <Typography
+                    variant="h5"
+                    component="h2"
+                    sx={{
+                      fontFamily: 'var(--font-poppins)',
+                      color: '#2C3E50',
+                      fontSize: { xs: '1.5rem', md: '1.75rem' },
+                      fontWeight: 600,
+                      letterSpacing: '-0.01em',
+                    }}
+                  >
+                    Tools & Navigation
+                  </Typography>
+                  <Button
+                    variant="text"
+                    color="primary"
+                    component={Link}
+                    href="/tools"
+                    sx={{
+                      fontSize: '0.875rem',
+                      fontWeight: 500
+                    }}
+                  >
+                    View All Tools
+                  </Button>
+                </Box>
+
+                {/* Horizontal Layout for Navigation Tools */}
+                <Grid container spacing={2.5}>
+                  {/* Daily Navigation Section */}
+                  <Grid item xs={12} md={4}>
+                    <Paper
+                      elevation={2}
+                      sx={{
+                        p: 2.5,
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        borderRadius: 2,
+                        transition: 'transform 0.2s, box-shadow 0.2s',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          boxShadow: 4
+                        },
+                        borderTop: '4px solid',
+                        borderColor: 'primary.main'
+                      }}
+                    >
+                      <Typography
+                        variant="h6"
+                        fontWeight={600}
+                        gutterBottom
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          color: 'primary.dark'
+                        }}
+                      >
+                        <Box
+                          component="span"
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            bgcolor: 'primary.light',
+                            color: 'primary.contrastText',
+                            width: 32,
+                            height: 32,
+                            borderRadius: '50%',
+                            mr: 1.5,
+                            fontSize: '1rem'
+                          }}
+                        >
+                          1
+                        </Box>
+                        Daily Navigation
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5, pl: 5.5 }}>
+                        Jump between reflections or return to today.
+                      </Typography>
+                      <Box sx={{ mt: 'auto' }}>
+                        <Stack spacing={1.5}>
+                          <Button
+                            variant="outlined"
+                            onClick={handlePrevDay}
+                            startIcon={<ArrowBackIosIcon />}
+                            sx={{
+                              justifyContent: 'flex-start',
+                              borderRadius: 1.5,
+                              py: 1
+                            }}
+                          >
+                            Previous
+                          </Button>
+                          {!isToday && (
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              component={Link}
+                              href={`/${todayKey}`}
+                              sx={{
+                                justifyContent: 'flex-start',
+                                borderRadius: 1.5,
+                                py: 1
+                              }}
+                            >
+                              Today
+                            </Button>
+                          )}
+                          <Button
+                            variant="outlined"
+                            onClick={handleNextDay}
+                            endIcon={<ArrowForwardIosIcon />}
+                            sx={{
+                              justifyContent: 'flex-start',
+                              borderRadius: 1.5,
+                              py: 1
+                            }}
+                          >
+                            Next
+                          </Button>
+                        </Stack>
+                      </Box>
+                    </Paper>
+                  </Grid>
+
+                  {/* Practice the Steps Section */}
+                  <Grid item xs={12} md={4}>
+                    <Paper
+                      elevation={2}
+                      sx={{
+                        p: 2.5,
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        borderRadius: 2,
+                        transition: 'transform 0.2s, box-shadow 0.2s',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          boxShadow: 4
+                        },
+                        borderTop: '4px solid',
+                        borderColor: 'secondary.main'
+                      }}
+                    >
+                      <Typography
+                        variant="h6"
+                        fontWeight={600}
+                        gutterBottom
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          color: 'secondary.dark'
+                        }}
+                      >
+                        <Box
+                          component="span"
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            bgcolor: 'secondary.light',
+                            color: 'secondary.contrastText',
+                            width: 32,
+                            height: 32,
+                            borderRadius: '50%',
+                            mr: 1.5,
+                            fontSize: '1rem'
+                          }}
+                        >
+                          2
+                        </Box>
+                        Practice the Steps
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5, pl: 5.5 }}>
+                        Tools that complement today&apos;s reading.
+                      </Typography>
+                      <Box sx={{ mt: 'auto' }}>
+                        <Stack spacing={1.5}>
+                          <Button
+                            component={Link}
+                            href="/journal/new"
+                            variant="outlined"
+                            color="secondary"
+                            sx={{
+                              justifyContent: 'flex-start',
+                              borderRadius: 1.5,
+                              py: 1
+                            }}
+                          >
+                            Journal
+                          </Button>
+                          <Button
+                            component={Link}
+                            href="/step4"
+                            variant="outlined"
+                            color="secondary"
+                            sx={{
+                              justifyContent: 'flex-start',
+                              borderRadius: 1.5,
+                              py: 1
+                            }}
+                          >
+                            Step Work
+                          </Button>
+                          <Button
+                            component={Link}
+                            href="/sobriety"
+                            variant="outlined"
+                            color="secondary"
+                            sx={{
+                              justifyContent: 'flex-start',
+                              borderRadius: 1.5,
+                              py: 1
+                            }}
+                          >
+                            Sobriety
+                          </Button>
+                        </Stack>
+                      </Box>
+                    </Paper>
+                  </Grid>
+
+                  {/* Invite Your Circle Section */}
+                  <Grid item xs={12} md={4}>
+                    <Paper
+                      elevation={2}
+                      sx={{
+                        p: 2.5,
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        borderRadius: 2,
+                        transition: 'transform 0.2s, box-shadow 0.2s',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          boxShadow: 4
+                        },
+                        borderTop: '4px solid',
+                        borderColor: 'info.main'
+                      }}
+                    >
+                      <Typography
+                        variant="h6"
+                        fontWeight={600}
+                        gutterBottom
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          color: 'info.dark'
+                        }}
+                      >
+                        <Box
+                          component="span"
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            bgcolor: 'info.light',
+                            color: 'info.contrastText',
+                            width: 32,
+                            height: 32,
+                            borderRadius: '50%',
+                            mr: 1.5,
+                            fontSize: '1rem'
+                          }}
+                        >
+                          3
+                        </Box>
+                        Invite Your Circle
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5, pl: 5.5 }}>
+                        Share and explore with accountability partners.
+                      </Typography>
+                      <Box sx={{ mt: 'auto' }}>
+                        <Stack spacing={1.5}>
+                          <Button
+                            component={Link}
+                            href={`/step4/shared`}
+                            variant="outlined"
+                            color="info"
+                            sx={{
+                              justifyContent: 'flex-start',
+                              borderRadius: 1.5,
+                              py: 1
+                            }}
+                          >
+                            Share Work
+                          </Button>
+                          <Button
+                            component={Link}
+                            href="/circles"
+                            variant="outlined"
+                            color="info"
+                            sx={{
+                              justifyContent: 'flex-start',
+                              borderRadius: 1.5,
+                              py: 1
+                            }}
+                          >
+                            Circles
+                          </Button>
+                        </Stack>
+                      </Box>
+                    </Paper>
+                  </Grid>
+                </Grid>
+              </Box>
+            </Grid>
+          </Grid>
+        ) : (
+          <Box sx={{ textAlign: 'center', py: 6 }}>
+            <Typography variant="h5" sx={{ mb: 3 }}>
+              Loading reflection...
             </Typography>
-            <EnhancedCommentList dateKey={dateKey} />
-          </Container>
-        </Box>
-      ) : (
-        <Box sx={{ textAlign: 'center', py: 12 }}>
-          <Typography variant="h5" sx={{ mb: 3 }}>
-            Loading reflection...
-          </Typography>
-        </Box>
-      )}
-    </Box>
+          </Box>
+        )}
+      </Container>
+    </>
   );
 }

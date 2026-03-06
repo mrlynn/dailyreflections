@@ -266,7 +266,7 @@ function SearchPageContent() {
           <SearchResults results={results} query={query} loading={loading} />
         ) : null}
 
-        {!loading && useUnifiedSearch && unifiedResults?.totalResults === 0 && query && (
+        {!loading && useUnifiedSearch && unifiedResults?.totalResults === 0 && query ? (
           <Paper
             elevation={0}
             sx={{
@@ -286,9 +286,7 @@ function SearchPageContent() {
               Try using more general terms or check your spelling.
             </Typography>
           </Paper>
-        )}
-
-        {!loading && !useUnifiedSearch && results.length === 0 && query && (
+        ) : !loading && !useUnifiedSearch && results.length === 0 && query ? (
           <Paper
             elevation={0}
             sx={{
@@ -308,7 +306,7 @@ function SearchPageContent() {
               Try using more general terms or check your spelling.
             </Typography>
           </Paper>
-        )}
+        ) : null}
 
         {!query && !loading && (
           <Paper

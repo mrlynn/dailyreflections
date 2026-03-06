@@ -1,14 +1,14 @@
 /**
  * Script to clean HTML tags from reflections, normalize text, and generate embeddings
- * 
+ *
  * This script:
  * 1. Fetches all reflections from MongoDB
  * 2. Uses OpenAI to clean HTML and normalize text (preserving meaning)
  * 3. Generates embeddings for vector search
  * 4. Updates MongoDB with cleaned content and embeddings
- * 
+ *
  * Run with: node scripts/clean-and-embed-reflections.js
- * 
+ *
  * Required environment variables:
  * - MONGODB_URI: MongoDB connection string
  * - OPENAI_API_KEY: OpenAI API key
@@ -43,6 +43,12 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
  * Preserves original meaning while removing HTML tags and fixing issues
  */
 async function cleanReflectionText(originalComment, title, quote, reference) {
+  // Guard: Don't call API with empty or whitespace-only text - model may return error messages
+  const trimmed = (originalComment || '').trim();
+  if (!trimmed) {
+    throw new Error('Cannot clean empty or missing comment text');
+  }
+
   const prompt = `You are a text cleaning assistant for a recovery-focused application. Your task is to clean HTML and normalize text while PRESERVING THE EXACT MEANING AND TONE.
 
 ORIGINAL TEXT (may contain HTML tags):
@@ -115,10 +121,17 @@ async function processReflection(reflection, client, dryRun = false) {
   console.log(`\n📖 Processing: ${dateKey} - ${title}`);
 
   try {
-    // Clean the comment text
-    console.log('  🔄 Cleaning HTML and normalizing text...');
-    const cleanedComment = await cleanReflectionText(comment, title, quote, reference);
-    await delay(200); // Rate limiting
+    // Clean the comment text (skip API call if comment is empty - use local strip instead)
+    let cleanedComment;
+    const trimmedComment = (comment || '').trim();
+    if (!trimmedComment) {
+      console.log('  ⚠️  Skipping cleaning - comment is empty, using as-is');
+      cleanedComment = trimmedComment;
+    } else {
+      console.log('  🔄 Cleaning HTML and normalizing text...');
+      cleanedComment = await cleanReflectionText(comment, title, quote, reference);
+      await delay(200); // Rate limiting
+    }
 
     // Generate embedding
     console.log('  🧠 Generating embedding...');
@@ -142,8 +155,8 @@ async function processReflection(reflection, client, dryRun = false) {
       console.log('  ✅ Updated in database');
     } else {
       console.log('  ⚠️  DRY RUN - Would update database');
-      console.log(`  Original: ${comment.substring(0, 100)}...`);
-      console.log(`  Cleaned:  ${cleanedComment.substring(0, 100)}...`);
+      console.log(`  Original: ${(comment || '').substring(0, 100)}...`);
+      console.log(`  Cleaned:  ${(cleanedComment || '').substring(0, 100)}...`);
     }
 
     return { success: true, reflectionId: _id, dateKey };

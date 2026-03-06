@@ -94,7 +94,7 @@ export default function RealtimeUserChatInterface({ sessionId, onClose }) {
         clearInterval(statusPolling);
       };
     }
-  }, [sessionId]);
+  }, [sessionId, isRealtimeChatEnabled]);
 
   // Effect to fetch initial chat messages on mount
   useEffect(() => {

@@ -24,7 +24,7 @@ export default function NavItem({ href, label, icon: Icon, featureFlag, subFeatu
 
   // Map route paths to feature flags if not explicitly provided
   let flagToCheck = featureFlag;
-  if (!flagToCheck && href !== '/') {
+  if (!flagToCheck && href && href !== '/') {
     const pathSegment = href.split('/')[1];
     if (pathSegment) {
       const routeToFeatureMap = {
@@ -54,7 +54,7 @@ export default function NavItem({ href, label, icon: Icon, featureFlag, subFeatu
         selected={isActive}
         onClick={onClick}
         sx={{
-          pl: nested ? 4 : 2,  // Add extra left padding for nested items
+          pl: nested ? 4 : 2,
           borderRadius: 1,
           mb: 0.1,
           mx: 1,
@@ -76,7 +76,7 @@ export default function NavItem({ href, label, icon: Icon, featureFlag, subFeatu
           primary={label}
           primaryTypographyProps={{
             variant: 'body2',
-            fontSize: nested ? '0.8125rem' : '0.875rem',  // Slightly smaller text for nested items
+            fontSize: nested ? '0.8125rem' : '0.875rem',
             fontWeight: isActive ? 600 : 'normal',
             color: isActive ? 'primary.main' : 'inherit',
           }}

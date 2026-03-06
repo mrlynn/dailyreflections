@@ -52,3 +52,8 @@ QUICK_FIX_SUMMARY.md
 RATE_LIMITING_AND_MODERATION.md
 SETUP_GUIDE.md
 TROUBLESHOOTING.md
+
+# temporary heavy assets
+public/bigbook/4th/
+public/reflections/*.png
+public/reflections/default-old.*

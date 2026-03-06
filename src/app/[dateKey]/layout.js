@@ -1,5 +1,6 @@
 import { createMetadata, formatDateKeyForSEO, getBaseUrl } from '@/utils/seoUtils';
 import clientPromise from '@/lib/mongodb';
+import { cleanQuoteForDisplay } from '@/lib/sanitize';
 import { parseDateKey } from '@/utils/dateUtils';
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -102,9 +103,9 @@ export async function generateMetadata({ params }) {
     // Create more comprehensive description that combines quote and comment
     let description = '';
 
-    // Start with the quote if available
+    // Start with the quote if available (cleaned to remove HTML/entities)
     if (reflection.quote) {
-      description = `"${reflection.quote}" `;
+      description = `"${cleanQuoteForDisplay(reflection.quote)}" `;
     }
 
     // Add a portion of the reflection text if available

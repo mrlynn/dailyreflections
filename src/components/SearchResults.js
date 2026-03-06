@@ -1,6 +1,7 @@
 'use client';
 
 import { Box, Typography, Card, CardContent, Divider, Chip, Link } from '@mui/material';
+import { cleanQuoteForDisplay } from '@/lib/sanitize';
 import { useRouter } from 'next/navigation';
 
 /**
@@ -97,7 +98,7 @@ export default function SearchResults({ results = [], query = '', loading = fals
                   WebkitBoxOrient: 'vertical',
                 }}
               >
-                {reflection.quote}
+                {cleanQuoteForDisplay(reflection.quote)}
               </Typography>
 
               {/* Reference */}

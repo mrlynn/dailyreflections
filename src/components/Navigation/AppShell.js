@@ -521,8 +521,8 @@ export default function AppShell({ children }) {
         component="main"
         sx={{
           flexGrow: 1,
-          marginLeft: { xs: 0, md: desktopSidebarOpen ? `${drawerWidth}px` : '0' },
-          width: { xs: '100%', md: desktopSidebarOpen ? `calc(100% - ${drawerWidth}px)` : '100%' },
+          marginLeft: { xs: 0, md: isSidebarVisible ? `${drawerWidth}px` : '0' },
+          width: { xs: '100%', md: isSidebarVisible ? `calc(100% - ${drawerWidth}px)` : '100%' },
           overflow: 'visible',
           backgroundColor: '#F8F9FA',
           pt: { xs: '56px', sm: '64px' },

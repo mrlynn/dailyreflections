@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { cleanQuoteForDisplay } from '@/lib/sanitize';
 import {
   Box,
   Typography,
@@ -30,12 +31,9 @@ export default function SimilarReflections({ dateKey, limit = 3 }) {
   // Fetch similar reflections when dateKey changes
   useEffect(() => {
     if (!dateKey) {
-      console.log('SimilarReflections: No dateKey provided');
       setLoading(false);
       return;
     }
-
-    console.log('SimilarReflections: Fetching for dateKey:', dateKey);
 
     const fetchSimilarReflections = async () => {
       try {
@@ -55,16 +53,10 @@ export default function SimilarReflections({ dateKey, limit = 3 }) {
         });
 
         if (!response.ok) {
-          const errorText = await response.text();
-          console.error('SimilarReflections API error:', response.status, errorText);
-          throw new Error(`Failed to fetch similar reflections: ${response.status}`);
+          throw new Error('Failed to fetch similar reflections');
         }
 
         const data = await response.json();
-        console.log('SimilarReflections: API response:', {
-          count: data.results?.length,
-          hasResults: !!data.results
-        });
 
         if (data.results) {
           // Filter out the current reflection if it appears in results
@@ -73,17 +65,14 @@ export default function SimilarReflections({ dateKey, limit = 3 }) {
             return reflectionKey !== dateKey;
           });
 
-          console.log('SimilarReflections: Filtered results:', filtered.length);
           setSimilarReflections(filtered);
         } else {
-          console.log('SimilarReflections: No results in response');
           setSimilarReflections([]);
         }
       } catch (err) {
-        console.error('SimilarReflections: Error fetching similar reflections:', err);
+        console.error('Error fetching similar reflections:', err);
         setError(err.message);
       } finally {
-        console.log('SimilarReflections: Fetch complete, setting loading to false');
         setLoading(false);
       }
     };
@@ -185,7 +174,7 @@ export default function SimilarReflections({ dateKey, limit = 3 }) {
                       WebkitBoxOrient: 'vertical',
                     }}
                   >
-                    {reflection.quote}
+                    {cleanQuoteForDisplay(reflection.quote)}
                   </Typography>
                 </CardContent>
               </Card>

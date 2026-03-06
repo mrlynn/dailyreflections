@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { getTodayKey } from '@/utils/dateUtils';
+import { cleanQuoteForDisplay } from '@/lib/sanitize';
 
 /**
  * GET /api/reflections/quote
@@ -25,25 +26,28 @@ export async function GET() {
     let source = null;
 
     if (todayReflection) {
-      // Try to extract a quote from the reflection text
-      // Look for text in quotes or a meaningful sentence
-      const text = todayReflection.text || '';
-      
-      // Look for quoted text first
-      const quotedMatch = text.match(/"([^"]{20,150})"/);
-      if (quotedMatch) {
-        quote = quotedMatch[1];
+      // Prefer the reflection's quote field (cleaned of HTML/entities)
+      const rawQuote = todayReflection.quote || '';
+      if (rawQuote) {
+        quote = cleanQuoteForDisplay(rawQuote);
         source = todayReflection.title || 'Daily Reflection';
       } else {
-        // Extract first meaningful sentence (50-150 chars)
-        const sentences = text.split(/[.!?]+/).filter(s => {
-          const trimmed = s.trim();
-          return trimmed.length >= 50 && trimmed.length <= 150;
-        });
-        
-        if (sentences.length > 0) {
-          quote = sentences[0].trim();
+        // Fallback: try to extract from comment text
+        const text = todayReflection.comment || todayReflection.text || '';
+        const cleanText = cleanQuoteForDisplay(text);
+        const quotedMatch = cleanText.match(/"([^"]{20,150})"/);
+        if (quotedMatch) {
+          quote = quotedMatch[1];
           source = todayReflection.title || 'Daily Reflection';
+        } else {
+          const sentences = cleanText.split(/[.!?]+/).filter(s => {
+            const trimmed = s.trim();
+            return trimmed.length >= 50 && trimmed.length <= 150;
+          });
+          if (sentences.length > 0) {
+            quote = sentences[0].trim();
+            source = todayReflection.title || 'Daily Reflection';
+          }
         }
       }
     }

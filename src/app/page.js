@@ -44,6 +44,7 @@ import DailyProgressPanel from '@/components/Home/DailyProgressPanel';
 import SkeletonLoading from '@/components/Home/SkeletonLoading';
 import { stepsOfTheMonth } from '@/lib/stepsOfTheMonth';
 import SessionDebug from '@/components/Debug/SessionDebug';
+import { cleanQuoteForDisplay } from '@/lib/sanitize';
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 
 // Helper function to get time-based greeting
@@ -373,7 +374,7 @@ export default function Home() {
                     mb: 0.5,
                   }}
                 >
-                  "{dailyQuote.quote}"
+                  "{cleanQuoteForDisplay(dailyQuote.quote)}"
                 </Typography>
                 <Typography
                   variant="caption"

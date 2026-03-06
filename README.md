@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![License](https://img.shields.io/github/license/your-username/aa-companion)
+![License](https://img.shields.io/github/license/mrlynn/aacompanion)
 ![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
 
@@ -60,8 +60,8 @@ Our mission is to make recovery resources more accessible while respecting the t
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/your-username/aa-companion.git
-cd aa-companion
+git clone https://github.com/mrlynn/aacompanion.git
+cd aacompanion
 ```
 
 2. **Install dependencies**
@@ -146,7 +146,7 @@ If you need assistance or have questions:
 The project follows Next.js App Router structure with clear separation of concerns:
 
 ```
-aa-companion/
+aacompanion/
 ├── public/                # Static assets
 ├── scripts/              # Utility scripts for seeding, migrations, etc.
 ├── src/
@@ -258,6 +258,6 @@ This project is open source and available under the MIT License.
 
 **Built by the recovery community, for the recovery community**
 
-[Report an Issue](https://github.com/your-username/aa-companion/issues) • [Request a Feature](https://github.com/your-username/aa-companion/issues/new?labels=enhancement)
+[Report an Issue](https://github.com/mrlynn/aacompanion/issues) • [Request a Feature](https://github.com/mrlynn/aacompanion/issues/new?labels=enhancement)
 
 </div>

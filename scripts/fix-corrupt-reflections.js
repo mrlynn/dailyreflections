@@ -56,6 +56,8 @@ function isCorrupt(reflection) {
     /PRESERVE the original meaning/i,
     /Return ONLY the cleaned text/i,
     /You are a text cleaning assistant/i,
+    /I'm sorry, but I need the original text to clean it/i,
+    /Please provide the text you would like me to process/i,
   ];
   
   return corruptPatterns.some(pattern => pattern.test(comment));
@@ -68,11 +70,29 @@ function isCorrupt(reflection) {
 function getCorrectContent(dateKey) {
   // Manual fixes - can be expanded with a JSON file
   const manualFixes = {
+    '03-02': {
+      title: 'HOPE',
+      quote: 'Do not be discouraged.',
+      reference: 'ALCOHOLICS ANONYMOUS, p. 60',
+      comment: 'Few experiences are of less value to me than fast sobriety. Too many times discouragement has been the bonus for unrealistic expectations, not to mention self-pity or fatigue from my wanting to change the world by the weekend. Discouragement is a warning signal that I may have wandered across the God line. The secret of fulfilling my potential is in acknowledging my limitations and believing that time is a gift, not a threat. Hope is the key that unlocks the door of discouragement. The program promises me that if I do not pick up the first drink today, I will always have hope. Having come to believe that I keep what I share, every time I encourage, I receive courage. It is with others that, with the grace of God and the Fellowship of A.A., I trudge the road of happy destiny. May I always remember that the power within me is far greater than any fear before me. May I always have patience, for I am on the right road.'
+    },
     '03-03': {
       title: 'OVERCOMING SELF-WILL',
       quote: 'So our troubles, we think, are basically of our own making. They arise out of ourselves, and the alcoholic is an extreme example of self-will run riot, though he usually doesn\'t think so. Above everything, we alcoholics must be rid of this selfishness. We must, or it kills us!',
       reference: 'ALCOHOLICS ANONYMOUS, p. 62',
       comment: 'For so many years my life revolved solely around myself. I was consumed with self in all forms—self-centeredness, self-pity, self-seeking, all of which stemmed from pride. Today I have been given the gift, through the Fellowship of Alcoholics Anonymous, of practicing the Steps and Traditions in my daily life, of my group and sponsor, and the capacity—if I so choose—to put my pride aside in all situations which arise in my life. Until I could honestly look at myself and see that I was the problem in many situations and react appropriately inside and out; until I could discard my expectations and understand that my serenity was directly proportional to them, I could not experience serenity and sound sobriety.'
+    },
+    '03-06': {
+      title: 'THE IDEA OF FAITH',
+      quote: 'Do not let any prejudice you might have against spiritual terms deter you from honestly asking yourself what they mean to you.',
+      reference: 'ALCOHOLICS ANONYMOUS, p. 47',
+      comment: 'The idea of faith is a very large chunk to swallow when fear, doubt and anger abound in and around me. Sometimes just the idea of doing something different, something I am not accustomed to doing, can eventually become an act of faith if I do it regularly, and do it without debating whether it\'s the right thing to do. When a bad day comes along and everything is going wrong, a meeting or a talk with another drunk often distracts me just enough to persuade me that everything is not quite as impossible, as overwhelming as I had thought. In the same way, going to a meeting or talking to a fellow alcoholic are acts of faith; I believe I\'m arresting my disease. These are ways I slowly move toward faith in a Higher Power.'
+    },
+    '05-16': {
+      title: 'WE FORGIVE . . .',
+      quote: 'Often it was while working on this Step with our sponsors or spiritual adviser that we first felt truly able to forgive others, no matter how deeply we felt they had wronged us. Our moral inventory had persuaded us that all-round forgiveness was desirable, but it was only when we resolutely tackled Step Five that we inwardly knew we\'d be able to receive forgiveness and give it, too.',
+      reference: 'TWELVE STEPS AND TWELVE TRADITIONS, p. 58',
+      comment: 'What a great feeling forgiveness is! What a revelation about my emotional, psychological and spiritual nature. All it takes is willingness to forgive; God will do the rest.'
     }
   };
   

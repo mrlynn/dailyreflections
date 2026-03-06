@@ -44,6 +44,8 @@
     "generate-image:test-run": "node scripts/generate-reflection-images.js --mock",
     "generate-test-image": "node scripts/generate-test-image.js",
     "generate-default-image": "node scripts/generate-default-image.js",
+    "compress-reflections": "node scripts/compress-reflection-images.js",
+    "compress-reflections:dry": "node scripts/compress-reflection-images.js --dry-run",
     "fix-corrupt": "node scripts/fix-corrupt-reflections.js",
     "fix-corrupt:list": "node scripts/fix-corrupt-reflections.js --list",
     "fix-corrupt:all": "node scripts/fix-corrupt-reflections.js --all",
