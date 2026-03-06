@@ -29,22 +29,8 @@ body {
   width: 100%;
 }
 
-/* Fix sidebar gap issue */
-.MuiDrawer-paper + main {
-  padding-left: 0 !important;
-  margin-left: 0 !important;
-}
-
-.no-sidebar-gap main {
-  padding-left: 0 !important;
-  margin-left: 260px !important; /* Exact width of sidebar */
-}
-
-@media (max-width: 900px) {
-  .no-sidebar-gap main {
-    margin-left: 0 !important;
-  }
-}
+/* Sidebar layout: margin is controlled dynamically by AppShell based on sidebar state.
+   No static overrides - allows main content to expand when sidebar collapses. */
 
 * {
   box-sizing: border-box;

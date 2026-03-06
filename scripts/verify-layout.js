@@ -1,48 +1,27 @@
 /**
  * Layout Verification Script
  *
- * This script performs checks to verify that the sidebar/main content gap issue is resolved.
- * It prints instructions for visual verification and provides a summary of the changes made.
+ * Verifies the collapsible sidebar layout works correctly.
+ * Main content expands when sidebar collapses; no static CSS overrides.
  */
 
 console.log('\x1b[1;36m====================================');
-console.log(' LAYOUT FIX VERIFICATION CHECKLIST');
+console.log(' SIDEBAR LAYOUT VERIFICATION');
 console.log('====================================\x1b[0m');
 
-console.log('\n\x1b[1mThe following changes were made to fix the sidebar gap issue:\x1b[0m');
+console.log('\n\x1b[1mCollapsible sidebar behavior:\x1b[0m');
+console.log('   • Main content margin/width controlled by AppShell (isSidebarVisible)');
+console.log('   • No static CSS overrides - allows content to expand when collapsed');
+console.log('   • Toggle tab visible at left edge when collapsed, at sidebar edge when expanded');
+console.log('   • Hover over collapsed tab to peek; click to toggle');
 
-console.log('\n\x1b[33m1. AppShell Component Changes:\x1b[0m');
-console.log('   ✓ Added position:fixed to the drawer');
-console.log('   ✓ Explicitly set width calculation for main content');
-console.log('   ✓ Removed extra Toolbar spacer element');
-console.log('   ✓ Set overflow to "visible"');
+console.log('\n\x1b[1;32mVERIFICATION STEPS:\x1b[0m');
+console.log('1. Start dev server: \x1b[1mnpm run dev\x1b[0m');
+console.log('2. Open \x1b[1mhttp://localhost:3000\x1b[0m on desktop (≥900px)');
+console.log('3. Click the ‹ tab to collapse the sidebar');
+console.log('   → Main content should expand to full width (no blank left space)');
+console.log('4. Click the › tab at left edge to expand');
+console.log('5. On /today or /assistant, sidebar auto-collapses; verify content fills width');
+console.log('6. On mobile, verify drawer overlay and content layout');
 
-console.log('\n\x1b[33m2. Global CSS Changes:\x1b[0m');
-console.log('   ✓ Removed body flex layout that caused conflicts');
-console.log('   ✓ Added targeted selector for drawer + main element');
-console.log('   ✓ Applied !important margin/padding reset');
-console.log('   ✓ Added no-sidebar-gap class with explicit margin');
-
-console.log('\n\x1b[33m3. Page Container Changes:\x1b[0m');
-console.log('   ✓ Set px:{xs:2, md:0} for desktop horizontal padding');
-console.log('   ✓ Added explicit width:100% to containers');
-
-console.log('\n\x1b[1;32mMANUAL VERIFICATION STEPS:\x1b[0m');
-console.log('1. Start the development server with: \x1b[1mnpm run dev\x1b[0m');
-console.log('2. Open the browser to: \x1b[1mhttp://localhost:3000\x1b[0m');
-console.log('3. Check the following scenarios:');
-console.log('   a. On desktop, verify there is NO gap between sidebar and content');
-console.log('   b. Verify the content extends to meet the sidebar edge perfectly');
-console.log('   c. Verify on mobile that the content fills the width appropriately');
-console.log('   d. Verify that all content containers align perfectly (hero + main)');
-console.log('4. Test on multiple screen sizes using the browser dev tools');
-
-console.log('\n\x1b[1;31mTROUBLESHOOTING TIPS:\x1b[0m');
-console.log('If the issue persists, check the following:');
-console.log('1. Use browser dev tools to inspect the gap');
-console.log('2. Check for any unexpected margin/padding on elements');
-console.log('3. Verify no conflicting styles are being applied');
-console.log('4. Check that the .no-sidebar-gap class is properly applied to body');
-console.log('5. Make sure the exact drawer width (260px) matches in all places');
-
-console.log('\n\x1b[1;36mThe fix should work across all modern browsers and screen sizes.\x1b[0m\n');
+console.log('\n\x1b[1;36mLayout uses push pattern: content resizes with sidebar state.\x1b[0m\n');

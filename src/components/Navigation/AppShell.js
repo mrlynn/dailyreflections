@@ -425,7 +425,7 @@ export default function AppShell({ children }) {
       {/* Collapsible drawer on desktop with hover support */}
       {isDesktop && (
         <>
-          {/* Drawer */}
+          {/* Drawer - fixed position, slides off-screen when collapsed */}
           <Box
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
@@ -433,15 +433,18 @@ export default function AppShell({ children }) {
               position: 'fixed',
               top: { xs: 56, sm: 64 },
               left: 0,
+              width: isSidebarVisible ? drawerWidth : 0,
               height: { xs: 'calc(100% - 56px)', sm: 'calc(100% - 64px)' },
               zIndex: (theme) => theme.zIndex.drawer,
+              transition: 'width 0.3s ease',
+              overflow: 'visible',
             }}
           >
             <Drawer
               variant="permanent"
               open
               sx={{
-                width: isSidebarVisible ? drawerWidth : 0,
+                width: drawerWidth,
                 flexShrink: 0,
                 '& .MuiDrawer-paper': {
                   width: drawerWidth,
@@ -459,19 +462,21 @@ export default function AppShell({ children }) {
               {drawerContent}
             </Drawer>
 
-            {/* Sidebar Toggle Tab */}
+            {/* Sidebar Toggle Tab - visible at left edge when collapsed, at sidebar edge when expanded */}
             <Box
               sx={{
-                position: 'absolute',
-                right: isSidebarVisible ? -40 : -40,
+                position: 'fixed',
+                left: isSidebarVisible ? drawerWidth - 1 : 0,
                 top: '50%',
                 transform: 'translateY(-50%)',
-                transition: 'right 0.3s ease',
+                transition: 'left 0.3s ease',
                 zIndex: (theme) => theme.zIndex.drawer + 1,
               }}
             >
-              <IconButton
-                onClick={handleDesktopSidebarToggle}
+              <Tooltip title={isSidebarVisible ? 'Collapse menu' : 'Expand menu'} placement="right">
+                <IconButton
+                  onClick={handleDesktopSidebarToggle}
+                  aria-label={isSidebarVisible ? 'Collapse navigation menu' : 'Expand navigation menu'}
                 sx={{
                   backgroundColor: 'primary.main',
                   color: 'white',
@@ -493,6 +498,7 @@ export default function AppShell({ children }) {
                   <Box sx={{ fontSize: '1.2rem', fontWeight: 'bold' }}>›</Box>
                 )}
               </IconButton>
+              </Tooltip>
             </Box>
           </Box>
         </>

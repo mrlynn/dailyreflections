@@ -44,7 +44,7 @@ export const metadata = createMetadata({
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${poppins.variable} no-sidebar-gap`}>
+      <body className={`${inter.variable} ${poppins.variable}`}>
         <Providers>
           <AppShell>
             {children}
